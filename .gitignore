@@ -1,0 +1,20 @@
+# 依存
+node_modules/
+
+# ビルド成果物
+dist/
+
+# ログ
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# OS
+.DS_Store
+*.pem
+
+# ローカルの環境変数
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
