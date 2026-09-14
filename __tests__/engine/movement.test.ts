@@ -10,11 +10,13 @@ const board: Board = {
     { id: 'b', type: 'road', level: 0 },
     { id: 'c', type: 'wall', level: 3 },
     { id: 'd', type: 'road', level: 0 },
+    { id: 'e', type: 'road', level: 0 },
   ],
   edges: [
     { a: 'a', b: 'b' },
     { a: 'b', b: 'c' },
     { a: 'b', b: 'd' },
+    { a: 'a', b: 'e' },
   ],
 };
 
@@ -80,9 +82,9 @@ describe('canMove', () => {
 
   it('封鎖されたノードには入れない（条件6）', () => {
     const state = { ...setup() };
-    const blocked = { ...state, blockades: { b: 2 } };
+    const blocked = { ...state, blockades: { e: 2 } };
     const king = blocked.pieces.find((p) => p.owner === 'player' && p.isKing)!;
-    expect(canMove(blocked, king, 'b')).toBe(false);
+    expect(canMove(blocked, king, 'e')).toBe(false);
   });
 
   it('king 以外は同レベル以上の敵駒にも突っ込める（削る手）', () => {
