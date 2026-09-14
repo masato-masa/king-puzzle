@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { goBack, navigate, useRoute } from '@/core/router';
+import { navigate, useRoute } from '@/core/router';
 import { getLevel } from '@/levels/index';
 
 import { Game } from './ui/Game';
@@ -15,7 +15,7 @@ function LevelRoute({ levelId }: { levelId: string }) {
     return (
       <div className="app notice">
         <p>そのステージは見つかりませんでした。</p>
-        <button type="button" className="text-btn" onClick={() => navigate({ name: 'home' })}>
+        <button type="button" className="sheet-link" onClick={() => navigate({ name: 'home' })}>
           ホームへ
         </button>
       </div>
@@ -24,7 +24,7 @@ function LevelRoute({ levelId }: { levelId: string }) {
 
   return (
     <>
-      <Game key={level.id} level={level} onBack={goBack} onHelp={() => setShowHelp(true)} />
+      <Game key={level.id} level={level} onBack={() => navigate({ name: 'home' })} onHelp={() => setShowHelp(true)} />
       {showHelp && <HelpSheet onClose={() => setShowHelp(false)} />}
     </>
   );

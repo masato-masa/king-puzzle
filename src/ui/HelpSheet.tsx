@@ -27,7 +27,7 @@ export function HelpSheet({ onClose }: HelpSheetProps) {
           <h3>5. かちまけ</h3>
           <p>相手の王を倒せば勝ち。自分の王を失えば負け。決められたターン数で勝てなくても負け。</p>
         </section>
-        <button type="button" className="text-btn" onClick={onClose}>
+        <button type="button" className="sheet-link" onClick={onClose}>
           とじる
         </button>
       </div>

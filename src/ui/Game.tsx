@@ -85,7 +85,7 @@ export function Game({ level, onBack, onHelp }: GameProps) {
         <div className="kp-result-overlay">
           <div className="kp-result-card">
             <p>{state.status === 'won' ? 'クリア！' : 'また挑戦しよう'}</p>
-            <button type="button" className="text-btn" onClick={onBack}>
+            <button type="button" className="sheet-link" onClick={onBack}>
               もどる
             </button>
           </div>

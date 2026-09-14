@@ -12,13 +12,8 @@ export function Home() {
 
   return (
     <div className="app home">
-      <div className="home-header">
-        <button type="button" className="icon-btn" aria-label="設定">
-          設定
-        </button>
-      </div>
       <h1 className="title">king-puzzle</h1>
-      <p className="subtitle">城攻めパズル</p>
+      <p className="home-sub">城攻めパズル</p>
       <div className="chapter-list">
         {groups.map(({ chapter, levels }, index) => {
           const previousLevelIds = index > 0 ? groups[index - 1].levels.map((l) => l.id) : [];
@@ -33,7 +28,7 @@ export function Home() {
                     <li key={level.id}>
                       <button
                         type="button"
-                        className="text-btn"
+                        className="sheet-link"
                         disabled={!unlocked}
                         onClick={() => navigate({ name: 'level', levelId: level.id })}
                       >
@@ -47,7 +42,7 @@ export function Home() {
           );
         })}
       </div>
-      <button type="button" className="dev-menu-pill" onClick={handleClearRecords}>
+      <button type="button" className="dev-pill" onClick={handleClearRecords}>
         テスト用（きろくをけす）
       </button>
     </div>

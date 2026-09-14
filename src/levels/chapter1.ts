@@ -24,6 +24,6 @@ export const ch1_1: LevelDef = {
   ],
   initialCoins: 0,
   attacks: [],
-  tStar: 3, // 仮値。Task 13 で実測して更新する
+  tStar: 3, // scripts/solveLevel.ts で実測済み
   s: 4,
 };

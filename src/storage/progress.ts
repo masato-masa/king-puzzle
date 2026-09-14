@@ -11,7 +11,10 @@ type ProgressMap = Record<string, LevelProgress>;
 function readAll(): ProgressMap {
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as ProgressMap) : {};
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) return {};
+    return parsed as ProgressMap;
   } catch {
     return {};
   }

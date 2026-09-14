@@ -26,7 +26,7 @@ export function applyMove(state: GameState, pieceId: string, toNodeId: string): 
 
     if (result.winner === 'mutual') {
       const pieces = state.pieces.filter((p) => p.id !== piece.id && p.id !== occupant.id);
-      return { ...state, pieces, status: defeatedEnemyKing ? 'won' : state.status };
+      return { ...state, pieces, status: defeatedEnemyKing && !piece.isKing ? 'won' : state.status };
     }
     if (result.winner === 'attacker') {
       const pieces = state.pieces
