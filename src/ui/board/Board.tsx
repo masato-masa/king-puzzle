@@ -1,5 +1,27 @@
 import { computeLayout } from './layout';
-import type { GameState, Piece } from '@/engine/types';
+import type { BoardNode, GameState, Piece } from '@/engine/types';
+
+// 絵は assets-src/sheet.png（ChatGPT で 1 枚に描かせたもの）を scripts/slice-sprites.mjs で切り出したもの。
+const SPRITES = import.meta.glob('../../assets/sprites/*.png', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+const sprite = (name: string): string => SPRITES[`../../assets/sprites/${name}.png`];
+
+/** 道には絵を置かない。施設と小屋と壁だけ建物の絵を出す。 */
+const BUILDING: Partial<Record<BoardNode['type'], string>> = {
+  hut: 'hut',
+  wall: 'wall',
+  mine: 'mine',
+  training: 'training',
+};
+
+const FACILITY_NAME: Partial<Record<BoardNode['type'], string>> = {
+  wall: '壁',
+  mine: '鉱山',
+  training: '訓練所',
+};
 
 interface BoardProps {
   state: GameState;
@@ -10,14 +32,6 @@ interface BoardProps {
   onSelectHut: (nodeId: string) => void;
   onSelectDestination: (nodeId: string) => void;
 }
-
-const NODE_COLOR: Record<string, string> = {
-  road: 'var(--surface-2)',
-  hut: '#d9c07a',
-  wall: '#8a5a5a',
-  mine: '#7a9e7e',
-  training: '#7a8fc2',
-};
 
 export function Board({
   state,
@@ -54,30 +68,44 @@ export function Board({
         const piece = pieceAt(node.id);
         const isDestination = legalDestinations.includes(node.id);
         const isHutTarget = node.type === 'hut' && node.hutOwner === 'player' && !piece;
+        const building = BUILDING[node.type];
+        const facilityName = FACILITY_NAME[node.type];
         return (
           <div
             key={node.id}
-            className={`kp-node kp-node-${node.type}${isDestination ? ' kp-node-legal' : ''}`}
+            className={`kp-node kp-node-${node.type}${node.hutOwner ? ` kp-hut-${node.hutOwner}` : ''}${
+              isDestination ? ' kp-node-legal' : ''
+            }`}
             style={{
               position: 'absolute',
               left: `${((pos.x - minX) / width) * 100}%`,
               top: `${((pos.y - minY) / height) * 100}%`,
-              background: NODE_COLOR[node.type],
             }}
+            aria-label={facilityName ? `${facilityName} Lv${node.level}` : undefined}
             onClick={() => {
               if (isDestination) onSelectDestination(node.id);
               else if (isHutTarget) onSelectHut(node.id);
               else if (piece && piece.owner === 'player') onSelectPiece(piece);
             }}
           >
-            {node.type !== 'road' && node.type !== 'hut' && <span className="kp-node-level">Lv{node.level}</span>}
+            {building && (
+              <img className={`kp-building${piece ? ' kp-building-under' : ''}`} src={sprite(building)} alt="" draggable={false} />
+            )}
+            {facilityName && <span className="kp-node-level">Lv{node.level}</span>}
             {piece && (
               <div
                 className={`kp-piece kp-piece-${piece.owner}${piece.isKing ? ' kp-piece-king' : ''}${
                   piece.id === selectedPieceId ? ' kp-piece-selected' : ''
                 }${piece.snared > 0 ? ' kp-piece-snared' : ''}`}
+                aria-label={`${piece.owner === 'player' ? '自分' : '相手'}の${piece.isKing ? '王' : `兵 Lv${piece.level}`}`}
               >
-                {piece.isKing ? '王' : piece.level}
+                <img
+                  className="kp-piece-img"
+                  src={sprite(`${piece.isKing ? 'king' : 'soldier'}-${piece.owner}`)}
+                  alt=""
+                  draggable={false}
+                />
+                {!piece.isKing && <span className="kp-piece-level">{piece.level}</span>}
               </div>
             )}
           </div>

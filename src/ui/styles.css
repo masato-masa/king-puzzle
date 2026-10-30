@@ -35,47 +35,103 @@ body,
   height: 56px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--surface-2);
   border: 2px solid var(--line);
+  box-sizing: border-box;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 小屋は持ち主の色の縁で、自分の小屋（兵を呼べる場所）を見分ける。 */
+.kp-hut-player {
+  border-color: var(--accent);
+}
+.kp-hut-enemy {
+  border-color: var(--warn);
 }
 .kp-node-legal {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
-.kp-node-level {
-  font-size: 11px;
-  color: var(--muted);
+
+/* 中身はすべて絶対配置で重ねる。駒が乗っても降りてもノードの大きさは変わらない。 */
+.kp-building,
+.kp-piece {
   position: absolute;
-  margin-top: -40px;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+  user-select: none;
+}
+.kp-building {
+  width: 62px;
+  height: 62px;
+  transform: translate(-50%, -54%);
+}
+/* 駒が乗っている建物は一段引かせ、駒を前に出す。 */
+.kp-building-under {
+  opacity: 0.45;
+}
+/* 駒の頭とぶつからないよう、ノードの下に出す。 */
+.kp-node-level {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  color: var(--pill-fg);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .kp-piece {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: #fff;
+  width: 62px;
+  height: 62px;
+  transform: translate(-50%, -60%);
 }
-.kp-piece-player {
+.kp-piece-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.18));
+  transition: transform 160ms ease-out;
+}
+.kp-piece-selected .kp-piece-img {
+  filter: drop-shadow(0 0 3px var(--accent)) drop-shadow(0 0 3px var(--accent));
+  transform: scale(1.08);
+}
+.kp-piece-snared .kp-piece-img {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+/* 兵のレベル。色は持ち主の色で、絵が小さくても敵味方が分かる。 */
+.kp-piece-level {
+  position: absolute;
+  right: 0;
+  bottom: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+}
+.kp-piece-player .kp-piece-level {
   background: var(--accent);
 }
-.kp-piece-enemy {
+.kp-piece-enemy .kp-piece-level {
   background: var(--warn);
-}
-.kp-piece-king {
-  border: 3px solid gold;
-}
-.kp-piece-selected {
-  box-shadow: 0 0 0 3px var(--accent-hover);
-}
-.kp-piece-snared {
-  opacity: 0.5;
 }
 
 .kp-result-overlay {

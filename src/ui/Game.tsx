@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { computeStars } from '@/engine/scoring';
 import { recordClear } from '@/storage/progress';
 import { turnLimitOf, type LevelDef } from '@/levels/types';
+import type { AttackType } from '@/engine/types';
 
 import { Board } from './board/Board';
 import { useGameController } from './board/useGameController';
@@ -12,6 +13,13 @@ import { SettingsSheet } from './SettingsSheet';
 
 /** 勝敗が決まってから結果カードを出すまで。最後の一手の音と盤面を見せ切る長さ。 */
 const RESULT_DELAY_MS = 1200;
+
+const ATTACK_NAME: Record<AttackType, string> = {
+  arrow: '弓',
+  cannon: '大砲',
+  snare: '足止め',
+  blockade: '封鎖',
+};
 
 interface GameProps {
   level: LevelDef;
@@ -81,7 +89,7 @@ export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
           <span className="stat">のこり {remainingTurns}ターン</span>
           {state.attacks.map((attack, i) => (
             <span key={attack.id} className="stat">
-              {attack.type} あと{state.attackStates[i].remaining}
+              {ATTACK_NAME[attack.type]} あと{state.attackStates[i].remaining}
             </span>
           ))}
         </div>
