@@ -1,9 +1,15 @@
+import { useState } from 'react';
+
 import { navigate } from '@/core/router';
 import { chapters } from '@/levels/index';
 import { clearAllProgress, getProgress, isChapterUnlocked } from '@/storage/progress';
 
+import { GearIcon } from './icons';
+import { SettingsSheet } from './SettingsSheet';
+
 export function Home() {
   const groups = chapters();
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleClearRecords = () => {
     clearAllProgress();
@@ -12,6 +18,11 @@ export function Home() {
 
   return (
     <div className="app home">
+      <div className="home-top">
+        <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} aria-label="設定">
+          <GearIcon />
+        </button>
+      </div>
       <h1 className="title">king-puzzle</h1>
       <p className="home-sub">城攻めパズル</p>
       <div className="chapter-list">
@@ -45,6 +56,7 @@ export function Home() {
       <button type="button" className="dev-pill" onClick={handleClearRecords}>
         テスト用（きろくをけす）
       </button>
+      {showSettings && <SettingsSheet onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

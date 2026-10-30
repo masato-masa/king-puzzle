@@ -5,6 +5,29 @@ import { createInitialState } from '@/engine/state';
 import { playRound } from '@/engine/turn';
 import type { GameState, Piece, PlayerAction } from '@/engine/types';
 import { turnLimitOf, type LevelDef } from '@/levels/types';
+import { buzz, playSfx } from '@/core/sound';
+
+/** 1 手で起きたことを音にする。前と後の盤面を比べるだけで、engine には手を入れない。 */
+function soundOf(prev: GameState, next: GameState, action: PlayerAction): void {
+  const count = (s: GameState, owner: Piece['owner']) => s.pieces.filter((p) => p.owner === owner).length;
+  if (action.kind === 'generate') playSfx('summon');
+  else if (action.kind === 'move' || action.kind === 'footstep') playSfx('select');
+  if (count(next, 'enemy') < count(prev, 'enemy')) {
+    playSfx('hit', 0.12);
+    buzz(18);
+  }
+  if (count(next, 'player') < count(prev, 'player')) {
+    playSfx('death', 0.2);
+    buzz([0, 30, 40, 30]);
+  }
+  if (next.coins > prev.coins) playSfx('coin', 0.18);
+  if (next.status === 'won' && prev.status === 'playing') {
+    playSfx('win', 0.45);
+    buzz([0, 18, 60, 18, 60, 30]);
+  } else if (next.status !== 'playing' && prev.status === 'playing') {
+    playSfx('lose', 0.45);
+  }
+}
 
 export function useGameController(level: LevelDef) {
   const initial = useMemo(
@@ -35,15 +58,18 @@ export function useGameController(level: LevelDef) {
   }, [legalActions, selectedPieceId, state]);
 
   const selectPiece = useCallback((piece: Piece) => {
+    playSfx('tap');
     setSelectedPieceId((current) => (current === piece.id ? null : piece.id));
   }, []);
 
   const commit = useCallback(
     (action: PlayerAction) => {
-      setHistory((h) => [...h, playRound(h[h.length - 1], action)]);
+      const next = playRound(state, action);
+      setHistory((h) => [...h, next]);
       setSelectedPieceId(null);
+      soundOf(state, next, action);
     },
-    []
+    [state]
   );
 
   const selectDestination = useCallback(
@@ -63,9 +89,10 @@ export function useGameController(level: LevelDef) {
   const selectHut = useCallback((nodeId: string) => commit({ kind: 'generate', hutNodeId: nodeId }), [commit]);
 
   const undo = useCallback(() => {
+    if (history.length > 1) playSfx('tap');
     setHistory((h) => (h.length > 1 ? h.slice(0, -1) : h));
     setSelectedPieceId(null);
-  }, []);
+  }, [history.length]);
 
   return {
     state,
