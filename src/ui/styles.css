@@ -13,6 +13,19 @@ body,
 
 .board {
   width: min(480px, 100%);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* 盤を置ける枠。Board.tsx がこの大きさを測って、盤の向きと倍率を決める。
+   高さを % で取ると親の高さが決まっておらず 0 になるので、flex で引き伸ばす。 */
+.kp-board-frame {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .kp-board {
@@ -31,8 +44,9 @@ body,
 }
 
 .kp-node {
-  width: 56px;
-  height: 56px;
+  /* --s は盤の倍率。座標と同じ比率で縮めるので、広い盤でも重ならない（KP-1）。 */
+  width: calc(56px * var(--s, 1));
+  height: calc(56px * var(--s, 1));
   border-radius: 50%;
   transform: translate(-50%, -50%);
   background: var(--surface-2);
@@ -63,8 +77,8 @@ body,
   user-select: none;
 }
 .kp-building {
-  width: 62px;
-  height: 62px;
+  width: calc(62px * var(--s, 1));
+  height: calc(62px * var(--s, 1));
   transform: translate(-50%, -54%);
 }
 /* 駒が乗っている建物は一段引かせ、駒を前に出す。 */
@@ -76,23 +90,23 @@ body,
   position: absolute;
   z-index: 1;
   left: 50%;
-  bottom: -14px;
+  bottom: calc(-14px * var(--s, 1));
   transform: translateX(-50%);
   padding: 1px 6px;
   border-radius: 999px;
   background: var(--surface);
   box-shadow: var(--shadow-xs);
   color: var(--pill-fg);
-  font-size: 10px;
+  font-size: max(8px, calc(10px * var(--s, 1)));
   font-weight: 700;
-  line-height: 14px;
+  line-height: 1.4;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .kp-piece {
-  width: 62px;
-  height: 62px;
+  width: calc(62px * var(--s, 1));
+  height: calc(62px * var(--s, 1));
   transform: translate(-50%, -60%);
 }
 .kp-piece-img {
@@ -115,16 +129,16 @@ body,
   position: absolute;
   right: 0;
   bottom: -2px;
-  min-width: 18px;
-  height: 18px;
+  min-width: calc(18px * var(--s, 1));
+  height: calc(18px * var(--s, 1));
   padding: 0 4px;
   box-sizing: border-box;
   border-radius: 999px;
   border: 2px solid var(--surface);
   color: #fff;
-  font-size: 11px;
+  font-size: max(8px, calc(11px * var(--s, 1)));
   font-weight: 800;
-  line-height: 14px;
+  line-height: calc(14px * var(--s, 1));
   text-align: center;
 }
 .kp-piece-player .kp-piece-level {

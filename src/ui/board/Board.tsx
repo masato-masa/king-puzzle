@@ -1,4 +1,6 @@
-import { computeLayout } from './layout';
+import { useLayoutEffect, useRef, useState } from 'react';
+
+import { computeLayout, fitLayout } from './layout';
 import type { BoardNode, GameState, Piece } from '@/engine/types';
 
 // 絵は assets-src/sheet.png（ChatGPT で 1 枚に描かせたもの）を scripts/slice-sprites.mjs で切り出したもの。
@@ -42,20 +44,30 @@ export function Board({
   onSelectHut,
   onSelectDestination,
 }: BoardProps) {
-  const positions = computeLayout(state.board, rootId);
-  const xs = Object.values(positions).map((p) => p.x);
-  const ys = Object.values(positions).map((p) => p.y);
-  const minX = Math.min(...xs) - 60;
-  const maxX = Math.max(...xs) + 60;
-  const minY = Math.min(...ys) - 60;
-  const maxY = Math.max(...ys) + 60;
-  const width = maxX - minX;
-  const height = maxY - minY;
+  // 盤を置ける枠の大きさを測り、その中に収まる向きと倍率を決める（layout.ts の fitLayout）。
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState({ width: 0, height: 0 });
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const measure = () => setBox({ width: frame.clientWidth, height: frame.clientHeight });
+    const ro = new ResizeObserver(measure);
+    ro.observe(frame);
+    measure();
+    return () => ro.disconnect();
+  }, []);
+
+  const fitted = fitLayout(computeLayout(state.board, rootId), box.width, box.height);
+  const { positions, minX, minY, width, height, scale } = fitted;
 
   const pieceAt = (nodeId: string): Piece | undefined => state.pieces.find((p) => p.nodeId === nodeId);
 
   return (
-    <div className="kp-board" style={{ position: 'relative', width: '100%', aspectRatio: `${width} / ${height}` }}>
+    <div ref={frameRef} className="kp-board-frame">
+    <div
+      className="kp-board"
+      style={{ position: 'relative', width: width * scale, height: height * scale, ['--s' as string]: scale }}
+    >
       <svg viewBox={`${minX} ${minY} ${width} ${height}`} className="kp-board-edges">
         {state.board.edges.map((edge) => {
           const a = positions[edge.a];
@@ -78,8 +90,8 @@ export function Board({
             }`}
             style={{
               position: 'absolute',
-              left: `${((pos.x - minX) / width) * 100}%`,
-              top: `${((pos.y - minY) / height) * 100}%`,
+              left: (pos.x - minX) * scale,
+              top: (pos.y - minY) * scale,
             }}
             aria-label={facilityName ? `${facilityName} Lv${node.level}` : undefined}
             onClick={() => {
@@ -111,6 +123,7 @@ export function Board({
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
