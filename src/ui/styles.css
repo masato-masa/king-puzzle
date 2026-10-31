@@ -19,10 +19,13 @@ body,
 }
 
 /* 盤を置ける枠。Board.tsx がこの大きさを測って、盤の向きと倍率を決める。
-   高さを % で取ると親の高さが決まっておらず 0 になるので、flex で引き伸ばす。 */
+   高さを % で取ると親の高さが決まっておらず 0 になるので、flex で引き伸ばす。
+   盤そのものは絶対配置にして、枠の大きさに盤の大きさが跳ね返らないようにする
+   （跳ね返ると、盤が枠を押し広げてページがはみ出す）。 */
 .kp-board-frame {
   flex: 1;
   min-width: 0;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,6 +33,10 @@ body,
 
 .kp-board {
   touch-action: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 .kp-board-edges {
   position: absolute;

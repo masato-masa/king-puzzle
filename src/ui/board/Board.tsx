@@ -66,7 +66,7 @@ export function Board({
     <div ref={frameRef} className="kp-board-frame">
     <div
       className="kp-board"
-      style={{ position: 'relative', width: width * scale, height: height * scale, ['--s' as string]: scale }}
+      style={{ width: width * scale, height: height * scale, ['--s' as string]: scale }}
     >
       <svg viewBox={`${minX} ${minY} ${width} ${height}`} className="kp-board-edges">
         {state.board.edges.map((edge) => {
