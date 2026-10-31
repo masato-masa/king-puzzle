@@ -46,6 +46,8 @@ export interface AttackPhaseResult {
   state: GameState;
   freshSnaredPieceIds: Set<string>;
   freshBlockadeNodeIds: Set<string>;
+  /** このラウンドに敵の小屋から生まれた兵。このラウンドは動かない。 */
+  freshSpawnIds: Set<string>;
 }
 
 /**
@@ -66,10 +68,21 @@ export function applyAttackPhase(state: GameState): AttackPhaseResult {
   const blockades = { ...state.blockades };
   const freshSnaredPieceIds = new Set<string>();
   const freshBlockadeNodeIds = new Set<string>();
+  const freshSpawnIds = new Set<string>();
+  let nextPieceId = state.nextPieceId;
 
   for (const { index, nodeId } of firing) {
     if (nodeId === null) continue;
     const attack = state.attacks[index];
+
+    if (attack.type === 'spawn') {
+      // 敵の小屋が空いているときだけ生まれる。自分の駒で塞げば止まる（§8）
+      if (pieces.some((p) => p.nodeId === nodeId)) continue;
+      const id = `enemy-gen-${nextPieceId++}`;
+      pieces = [...pieces, { id, owner: 'enemy', isKing: false, level: 1, speed: 1, snared: 0, nodeId, behavior: 'march' }];
+      freshSpawnIds.add(id);
+      continue;
+    }
 
     if (attack.type === 'blockade') {
       blockades[nodeId] = attack.duration ?? 1;
@@ -97,5 +110,10 @@ export function applyAttackPhase(state: GameState): AttackPhaseResult {
     s.remaining <= 0 ? { remaining: state.attacks[index].period } : s
   );
 
-  return { state: { ...state, pieces, blockades, attackStates }, freshSnaredPieceIds, freshBlockadeNodeIds };
+  return {
+    state: { ...state, pieces, blockades, attackStates, nextPieceId },
+    freshSnaredPieceIds,
+    freshBlockadeNodeIds,
+    freshSpawnIds,
+  };
 }

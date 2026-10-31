@@ -1,5 +1,6 @@
 import { applyFootstep, applyGenerate, applyMove } from './actions';
 import { applyAttackPhase } from './attacks';
+import { applyEnemyMovePhase } from './enemies';
 import { applyEndOfTurnFacilityEffects } from './facilities';
 import type { GameState, PlayerAction } from './types';
 
@@ -35,6 +36,8 @@ export function playRound(state: GameState, action: PlayerAction): GameState {
   // 【相手のターン】
   const attackResult = applyAttackPhase(next);
   next = attackResult.state;
+
+  next = applyEnemyMovePhase(next, attackResult.freshSpawnIds);
 
   next = applyEndOfTurnFacilityEffects(next, 'enemy');
 

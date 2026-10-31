@@ -9,8 +9,11 @@
  * - 駒の大きさ（343×420 の枠＝狭いスマホで描いたときの px）。40px 未満は押しにくい（KP-6）
  * - 当てずっぽう勝率: 合法手を一様に選んで制限ターン内に勝てる割合。高いほど「考えずに解ける」面（P2）
  * - 最短解の中の強制スキップ（何もできないラウンド）
+ * - 最短解で起きること（KP-13）: 馬小屋で速さが上がったか、動く敵の兵が何体出たか、敵の兵と戦ったか
  */
-import type { PlayerAction } from '../src/engine/types';
+import { createInitialState } from '../src/engine/state';
+import { playRound } from '../src/engine/turn';
+import type { GameState, PlayerAction } from '../src/engine/types';
 import { LEVELS } from '../src/levels/index';
 import { MIN_PIECE_PX, piecePx, randomWinRate } from '../src/levels/metrics';
 import { turnLimitOf } from '../src/levels/types';
@@ -29,6 +32,32 @@ function describe(action: PlayerAction): string {
     case 'forced-skip':
       return 'スキップ';
   }
+}
+
+/** 最短解をなぞって、新しい仕掛けが解き方に効いているかを見る。 */
+function featuresOnPath(level: (typeof LEVELS)[number], path: PlayerAction[]): string {
+  let state: GameState = createInitialState({
+    board: level.board,
+    initialPieces: level.initialPieces,
+    initialCoins: level.initialCoins,
+    attacks: level.attacks,
+    turnLimit: 99,
+  });
+  const movers = new Set(state.pieces.filter((p) => p.behavior).map((p) => p.id));
+  let fast = false;
+  let fights = 0;
+  for (const action of path) {
+    const alive = state.pieces.filter((p) => p.behavior).map((p) => p.id);
+    state = playRound(state, action);
+    fights += alive.filter((id) => !state.pieces.some((p) => p.id === id)).length;
+    state.pieces.filter((p) => p.behavior).forEach((p) => movers.add(p.id));
+    if (state.pieces.some((p) => p.owner === 'player' && p.speed > 1)) fast = true;
+  }
+  const out: string[] = [];
+  if (movers.size > 0) out.push(`敵兵${movers.size}体`);
+  if (fights > 0) out.push(`敵兵が消えた${fights}回`);
+  if (fast) out.push('速さ2');
+  return out.join(' ');
 }
 
 function main() {
@@ -53,6 +82,7 @@ function main() {
         `駒=${px.toFixed(0)}px`.padEnd(8),
         `当てずっぽう=${(rate * 100).toFixed(1)}%`.padEnd(14),
         flags.join(' ') || 'OK',
+        result ? featuresOnPath(level, result.path) : '',
       ].join(' '),
     );
     if (only && result) console.log(result.path.map(describe).join(' / '));

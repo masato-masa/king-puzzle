@@ -4,9 +4,11 @@
  *   import { L, A, report } from './draft-level';
  *   report(L('ch4-1', 'かべをこわす', 'n1 n2 n3:w2 n4 n5', 'n1-n2-n3-n4-n5', 'K2@n1 S2@n2 E1@n5', 0, 2));
  *
- * ノード: 'id'（道）/ 'id:t2'（訓練場 Lv2）/ 'id:m1'（採掘場）/ 'id:w2'（壁）/ 'id:h'（自分の小屋）
+ * ノード: 'id'（道）/ 'id:t2'（訓練場 Lv2）/ 'id:m1'（採掘場）/ 'id:w2'（壁）/ 'id:s2'（馬小屋）/ 'id:h'（自分の小屋）/ 'id:e'（敵の小屋）
  * 辺: 'n1-n2-n3' のようにつなげて書く（空白で区切って何本でも）
- * 駒: 'K2@n1'（自分の王 Lv2）/ 'S1@n2'（自分の兵）/ 'E3@n5'（相手の王）/ 'X2@n4'（相手の兵）
+ * 駒: 'K2@n1'（自分の王 Lv2）/ 'S1@n2'（自分の兵）/ 'E3@n5'（相手の王）/ 'X2@n4'（相手の兵・動かない）
+ *     'M2@n4'（進軍する相手の兵）/ 'O2@n4>n3'（n3 の施設へ向かって居座る相手の兵）
+ * 敵の小屋から兵を生む: A('g1', 'spawn', 'n5', 3)
  */
 import type { AttackDef, AttackType, BoardNode, InitialPieceSetup, TrackingRule } from '../src/engine/types';
 import type { LevelDef } from '../src/levels/types';
@@ -30,7 +32,8 @@ export function L(
       const [nid, t] = spec.split(':');
       if (!t) return { id: nid, type: 'road', level: 0 };
       if (t === 'h') return { id: nid, type: 'hut', level: 0, hutOwner: 'player' };
-      const type = ({ t: 'training', m: 'mine', w: 'wall' } as const)[t[0] as 't' | 'm' | 'w'];
+      if (t === 'e') return { id: nid, type: 'hut', level: 0, hutOwner: 'enemy' };
+      const type = ({ t: 'training', m: 'mine', w: 'wall', s: 'stable' } as const)[t[0] as 't' | 'm' | 'w' | 's'];
       return { id: nid, type, level: Number(t.slice(1)) };
     });
   const es = edges
@@ -44,14 +47,18 @@ export function L(
     .split(/\s+/)
     .filter(Boolean)
     .map((spec) => {
-      const [head, nodeId] = spec.split('@');
+      const [head, rest] = spec.split('@');
+      const [nodeId, target] = rest.split('>');
       const kind = head[0];
-      return {
-        owner: kind === 'E' || kind === 'X' ? 'enemy' : 'player',
+      const setup: InitialPieceSetup = {
+        owner: 'EXMO'.includes(kind) ? 'enemy' : 'player',
         isKing: kind === 'K' || kind === 'E',
         level: Number(head.slice(1)),
         nodeId,
       };
+      if (kind === 'M') setup.behavior = 'march';
+      if (kind === 'O') Object.assign(setup, { behavior: 'occupy', target });
+      return setup;
     });
   const [chapter, order] = id.slice(2).split('-').map(Number);
   return { id, chapter, order, title, board: { nodes: ns, edges: es }, initialPieces: ps, initialCoins: coins, attacks, tStar: 0, s };

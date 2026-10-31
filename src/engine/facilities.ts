@@ -10,6 +10,9 @@ export function applyEndOfTurnFacilityEffects(state: GameState, owner: Owner): G
     if (node.type === 'training' && piece.level < node.level) {
       return { ...piece, level: piece.level + 1 };
     }
+    if (node.type === 'stable' && piece.speed < node.level) {
+      return { ...piece, speed: piece.speed + 1 };
+    }
     if (node.type === 'mine' && owner === 'player') {
       coins = Math.min(coins + mineIncome(node.level), COIN_MAX);
     }

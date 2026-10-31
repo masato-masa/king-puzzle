@@ -409,3 +409,35 @@ body,
     opacity: 1;
   }
 }
+
+/* ---- 馬小屋と速さ（KP-13） ---- */
+.kp-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(34px * var(--s, 1));
+  line-height: 1;
+}
+/* 速さ 2 以上の駒。レベルの反対側（左下）に出す。 */
+.kp-piece-speed {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  padding: 0 3px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  background: #c48a3a;
+  color: #fff;
+  font-size: max(8px, calc(10px * var(--s, 1)));
+  font-weight: 800;
+  line-height: calc(14px * var(--s, 1));
+  white-space: nowrap;
+}
+
+/* 2 行目の攻撃はまとめて 1 つのピルに「弓2 兵1」と並べる（KP-12）。このターンの終わりに来るものは赤。 */
+.kp-stat-attacks {
+  gap: 7px;
+}
+.kp-stat-soon {
+  color: var(--warn);
+}

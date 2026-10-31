@@ -21,6 +21,8 @@ export function createInitialState(input: CreateStateInput): GameState {
     speed: 1,
     snared: 0,
     nodeId: p.nodeId,
+    ...(p.behavior ? { behavior: p.behavior } : {}),
+    ...(p.target ? { target: p.target } : {}),
   }));
   return {
     round: 1,

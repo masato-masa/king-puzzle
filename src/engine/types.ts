@@ -1,8 +1,8 @@
 export type Owner = 'player' | 'enemy';
 
-export type NodeType = 'road' | 'hut' | 'wall' | 'mine' | 'training';
+export type NodeType = 'road' | 'hut' | 'wall' | 'mine' | 'training' | 'stable';
 
-export type FacilityType = 'mine' | 'training';
+export type FacilityType = 'mine' | 'training' | 'stable';
 
 export interface BoardNode {
   id: string;
@@ -31,13 +31,20 @@ export interface Piece {
   speed: number;
   snared: number;
   nodeId: string;
+  /** 敵の兵の動き方（§8）。無ければ動かない。march: 自分の王へ進む / occupy: target の施設へ進んで居座る */
+  behavior?: EnemyBehavior;
+  /** behavior === 'occupy' の行き先。 */
+  target?: string;
 }
+
+export type EnemyBehavior = 'march' | 'occupy';
 
 export type TrackingRule = 'nearest-to-enemy' | 'highest-level' | 'king';
 
 export type AttackTarget = { kind: 'node'; nodeId: string } | { kind: 'tracking'; rule: TrackingRule };
 
-export type AttackType = 'arrow' | 'cannon' | 'snare' | 'blockade';
+/** spawn は攻撃ではなく、敵の小屋（target のノード）が空いていれば進軍する Lv1 の兵を生む（§8 敵の駒）。 */
+export type AttackType = 'arrow' | 'cannon' | 'snare' | 'blockade' | 'spawn';
 
 export interface AttackDef {
   id: string;
@@ -78,4 +85,6 @@ export interface InitialPieceSetup {
   isKing: boolean;
   level: number;
   nodeId: string;
+  behavior?: EnemyBehavior;
+  target?: string;
 }

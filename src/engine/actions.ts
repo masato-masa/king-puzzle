@@ -10,7 +10,7 @@ function requirePiece(state: GameState, pieceId: string): Piece {
   return piece;
 }
 
-/** 移動（隣接ノードへ）。敵駒が居れば戦闘、壁なら破壊、それ以外なら移動。 */
+/** 移動（速さのぶんまで先のノードへ）。敵駒が居れば戦闘、壁なら破壊、それ以外なら移動。 */
 export function applyMove(state: GameState, pieceId: string, toNodeId: string): GameState {
   const piece = requirePiece(state, pieceId);
   if (!canMove(state, piece, toNodeId)) {
@@ -60,7 +60,7 @@ export function applyFootstep(state: GameState, pieceId: string): GameState {
   const piece = requirePiece(state, pieceId);
   if (piece.snared > 0) throw new Error(`snared piece cannot act: ${pieceId}`);
   const node = getNode(state.board, piece.nodeId);
-  if (node.type !== 'mine' && node.type !== 'training') return state;
+  if (node.type !== 'mine' && node.type !== 'training' && node.type !== 'stable') return state;
 
   const type = node.type as FacilityType;
   if (node.level >= facilityMaxLevel(type)) return state;

@@ -1,6 +1,5 @@
-import { neighbors } from './board';
 import { PIECE_GENERATION_COST } from './costs';
-import { canMove } from './movement';
+import { reachableNodes } from './movement';
 import type { GameState, PlayerAction } from './types';
 
 export function getLegalActions(state: GameState): PlayerAction[] {
@@ -9,10 +8,8 @@ export function getLegalActions(state: GameState): PlayerAction[] {
   for (const piece of state.pieces) {
     if (piece.owner !== 'player' || piece.snared > 0) continue;
     actions.push({ kind: 'footstep', pieceId: piece.id });
-    for (const toNodeId of neighbors(state.board, piece.nodeId)) {
-      if (canMove(state, piece, toNodeId)) {
-        actions.push({ kind: 'move', pieceId: piece.id, toNodeId });
-      }
+    for (const toNodeId of reachableNodes(state, piece)) {
+      actions.push({ kind: 'move', pieceId: piece.id, toNodeId });
     }
   }
 

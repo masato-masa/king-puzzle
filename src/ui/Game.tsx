@@ -14,11 +14,21 @@ import { SettingsSheet } from './SettingsSheet';
 /** 勝敗が決まってから結果カードを出すまで。最後の一手の音と盤面を見せ切る長さ。 */
 const RESULT_DELAY_MS = 1200;
 
+/** 2 行目では盤の印と同じ 1 文字で出す。攻撃が 3 つあっても 375px の 1 行に収める（KP-12）。 */
+const ATTACK_SHORT: Record<AttackType, string> = {
+  arrow: '弓',
+  cannon: '砲',
+  snare: '罠',
+  blockade: '封',
+  spawn: '兵',
+};
+
 const ATTACK_NAME: Record<AttackType, string> = {
   arrow: '弓',
   cannon: '大砲',
   snare: '足止め',
   blockade: '封鎖',
+  spawn: '敵兵',
 };
 
 interface GameProps {
@@ -52,6 +62,9 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
   const rootId = level.initialPieces.find((p) => p.owner === 'player' && p.isKing)!.nodeId;
   const turnLimit = turnLimitOf(level);
   const remainingTurns = Math.max(turnLimit - state.round + 1, 0);
+  // コインが増えも減りもしない面では出さない（2 行目を空ける）
+  const usesCoins =
+    level.initialCoins > 0 || level.board.nodes.some((n) => n.type === 'mine' || (n.type === 'hut' && n.hutOwner === 'player'));
 
   useEffect(() => {
     if (state.status === 'won') {
@@ -99,16 +112,26 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
           </div>
         </div>
         <div className="status-bar">
-          <span className="stat">コイン {state.coins}</span>
+          {usesCoins && <span className="stat">コイン {state.coins}</span>}
           <span className="stat">のこり {remainingTurns}ターン</span>
           <span className="stat" aria-label={`星3つは ${level.tStar} 手以内`}>
             ★3 {level.tStar}手
           </span>
-          {state.attacks.map((attack, i) => (
-            <span key={attack.id} className="stat">
-              {ATTACK_NAME[attack.type]} あと{state.attackStates[i].remaining}
+          {state.attacks.length > 0 && (
+            <span
+              className="stat kp-stat-attacks"
+              aria-label={state.attacks
+                .map((attack, i) => `${ATTACK_NAME[attack.type]} あと${state.attackStates[i].remaining}`)
+                .join('、')}
+            >
+              {state.attacks.map((attack, i) => (
+                <span key={attack.id} className={state.attackStates[i].remaining <= 1 ? 'kp-stat-soon' : undefined}>
+                  {ATTACK_SHORT[attack.type]}
+                  {state.attackStates[i].remaining}
+                </span>
+              ))}
             </span>
-          ))}
+          )}
         </div>
       </header>
       <main className="play">

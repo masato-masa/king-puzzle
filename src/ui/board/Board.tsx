@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { computeLayout, fitLayout } from './layout';
 import { resolveTrackingTarget } from '@/engine/attacks';
+import { enemyMovePreview } from '@/engine/enemies';
 import type { AttackType, BoardNode, GameState, Piece } from '@/engine/types';
 
 // 絵は assets-src/sheet.png（ChatGPT で 1 枚に描かせたもの）を scripts/slice-sprites.mjs で切り出したもの。
@@ -24,6 +25,12 @@ const FACILITY_NAME: Partial<Record<BoardNode['type'], string>> = {
   wall: '壁',
   mine: '鉱山',
   training: '訓練所',
+  stable: '馬小屋',
+};
+
+/** 絵の無い施設は文字の絵で出す（馬小屋は KP-13 で足した。シートに絵が無い）。 */
+const GLYPH: Partial<Record<BoardNode['type'], string>> = {
+  stable: '🐎',
 };
 
 const ATTACK_SHORT: Record<AttackType, string> = {
@@ -31,13 +38,14 @@ const ATTACK_SHORT: Record<AttackType, string> = {
   cannon: '砲',
   snare: '罠',
   blockade: '封',
+  spawn: '兵',
 };
 
 interface AttackMark {
   id: string;
   label: string;
-  /** 1 なら、このターンの終わりに飛んでくる。 */
-  remaining: number;
+  /** 1 なら、このターンの終わりに飛んでくる。敵の兵の行き先は数字を出さない（毎ターン動くので）。 */
+  remaining?: number;
 }
 
 /** 攻撃がいまどのノードを狙っているか。追尾型はその時点の対象を出す（動けば印も動く）。 */
@@ -53,6 +61,10 @@ function attackMarks(state: GameState): Record<string, AttackMark[]> {
       remaining: state.attackStates[i].remaining,
     });
   });
+  // 動く敵の兵が次に入るマス。攻撃の印と同じ場所に「進」と出す（§14 敵の行動を全部見せる、P7）
+  for (const { pieceId, nodeId } of enemyMovePreview(state)) {
+    (marks[nodeId] ??= []).push({ id: `move-${pieceId}`, label: '進' });
+  }
   return marks;
 }
 
@@ -134,6 +146,11 @@ export function Board({
               else if (piece && piece.owner === 'player') onSelectPiece(piece);
             }}
           >
+            {GLYPH[node.type] && (
+              <span className={`kp-building kp-glyph${piece ? ' kp-building-under' : ''}`} aria-hidden>
+                {GLYPH[node.type]}
+              </span>
+            )}
             {building && (
               <img className={`kp-building${piece ? ' kp-building-under' : ''}`} src={sprite(building)} alt="" draggable={false} />
             )}
@@ -143,8 +160,8 @@ export function Board({
                 {marks[node.id].map((m) => (
                   <span
                     key={m.id}
-                    className={`kp-attack-mark${m.remaining <= 1 ? ' kp-attack-mark-soon' : ''}`}
-                    aria-label={`${m.label} あと${m.remaining}`}
+                    className={`kp-attack-mark${(m.remaining ?? 1) <= 1 ? ' kp-attack-mark-soon' : ''}`}
+                    aria-label={m.remaining === undefined ? '敵の兵がつぎに進むマス' : `${m.label} あと${m.remaining}`}
                   >
                     {m.label}
                     {m.remaining}
@@ -168,7 +185,9 @@ export function Board({
                 piece.id === selectedPieceId ? ' kp-piece-selected' : ''
               }${piece.snared > 0 ? ' kp-piece-snared' : ''}${effect}`}
               style={{ left: (pos.x - minX) * scale, top: (pos.y - minY) * scale }}
-              aria-label={`${piece.owner === 'player' ? '自分' : '相手'}の${piece.isKing ? '王' : '兵'} Lv${piece.level}`}
+              aria-label={`${piece.owner === 'player' ? '自分' : '相手'}の${piece.isKing ? '王' : '兵'} Lv${piece.level}${
+                piece.speed > 1 ? ` 速さ${piece.speed}` : ''
+              }`}
             >
               <img
                 className="kp-piece-img"
@@ -177,6 +196,7 @@ export function Board({
                 draggable={false}
               />
               <span className="kp-piece-level">{piece.level}</span>
+              {piece.speed > 1 && <span className="kp-piece-speed">🐎{piece.speed}</span>}
             </div>
           );
         },

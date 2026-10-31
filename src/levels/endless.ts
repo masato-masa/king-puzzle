@@ -142,7 +142,7 @@ function occupied(level: LevelDef): Set<string> {
 
 /** 揺らし方の一覧。どれも 1 か所だけ変える。変えられなければ false。 */
 /** 施設を本編で初めて教える章（仕様書 §13 の順）。 */
-const INTRO_CHAPTER: Record<NodeType, number> = { road: 1, training: 3, wall: 4, hut: 5, mine: 6 };
+const INTRO_CHAPTER: Record<NodeType, number> = { road: 1, training: 3, wall: 4, hut: 5, mine: 6, stable: 13 };
 
 /** 足す施設の種類を、番号の目安の章で重みづけして選ぶ。まだ教えていない施設は出にくい（KP-15）。 */
 function pickFacility(rand: Rand, types: NodeType[], reach: number): NodeType {
@@ -160,10 +160,10 @@ const MUTATIONS: ((lv: LevelDef, rand: Rand, reach: number) => boolean)[] = [
   },
   // 施設・壁のレベル
   (lv, rand) => {
-    const nodes = lv.board.nodes.filter((x) => x.type === 'wall' || x.type === 'mine' || x.type === 'training');
+    const nodes = lv.board.nodes.filter((x) => x.type === 'wall' || x.type === 'mine' || x.type === 'training' || x.type === 'stable');
     if (nodes.length === 0) return false;
     const node = pick(rand, nodes);
-    const next = clamp(node.level + jitter(rand), 1, 5);
+    const next = clamp(node.level + jitter(rand), 1, node.type === 'stable' ? 3 : 5);
     if (next === node.level) return false;
     node.level = next;
     return true;
@@ -256,7 +256,10 @@ function relabel(lv: LevelDef, rand: Rand): void {
     e.a = to(e.a);
     e.b = to(e.b);
   });
-  lv.initialPieces.forEach((p: InitialPieceSetup) => (p.nodeId = to(p.nodeId)));
+  lv.initialPieces.forEach((p: InitialPieceSetup) => {
+    p.nodeId = to(p.nodeId);
+    if (p.target) p.target = to(p.target);
+  });
   lv.attacks.forEach((a) => {
     if (a.target.kind === 'node') a.target = { kind: 'node', nodeId: to(a.target.nodeId) };
   });
