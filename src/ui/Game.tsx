@@ -113,7 +113,9 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
         </div>
         <div className="status-bar">
           {usesCoins && <span className="stat">コイン {state.coins}</span>}
-          <span className="stat">のこり {remainingTurns}ターン</span>
+          <span className="stat" aria-label={`のこり ${remainingTurns} ターン`}>
+            のこり {remainingTurns}手
+          </span>
           <span className="stat" aria-label={`星3つは ${level.tStar} 手以内`}>
             ★3 {level.tStar}手
           </span>
