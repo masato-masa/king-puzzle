@@ -183,6 +183,33 @@ body,
   background: var(--warn);
 }
 
+/* 1 面目の操作の案内（KP-7）。下のツール行の上に重ねるので、出ても消えても盤は動かない。 */
+.footer {
+  position: relative;
+}
+.kp-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+  animation: kp-hint-bob 1.6s ease-in-out infinite;
+}
+@keyframes kp-hint-bob {
+  50% {
+    transform: translate(-50%, -3px);
+  }
+}
+
 /* 攻撃の狙い。ノードの上に「弓2」のように、種類と残りターンを出す。次で飛んでくるものは脈打つ。 */
 .kp-attack-marks {
   position: absolute;

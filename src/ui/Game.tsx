@@ -56,6 +56,13 @@ export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
   }, [state.status, level, actionsTaken]);
 
   const stars = computeStars(level.tStar, level.s, actionsTaken);
+  // 1 面目だけ、最初の 1 手まで操作を 1 行で案内する（KP-7）。押す場所が変わるたびに文言も変わる
+  const hint =
+    level.chapter === 1 && level.order === 1 && actionsTaken === 0 && state.status === 'playing'
+      ? selectedPieceId
+        ? '光っているマスをタップして進もう'
+        : '自分の王（青）をタップしよう'
+      : null;
   useEffect(() => {
     if (state.status === 'playing') {
       setShowResult(false);
@@ -110,6 +117,11 @@ export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
           />
         </div>
         <footer className="footer">
+          {hint && (
+            <p className="kp-hint" role="status">
+              {hint}
+            </p>
+          )}
           <button type="button" className="tool" onClick={undo} disabled={!canUndo} aria-label="もどす">
             <UndoToolIcon />
           </button>
