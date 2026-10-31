@@ -393,3 +393,19 @@ body,
 .level-stars span.on {
   color: #f5b81c;
 }
+
+/* ---- むげん: 面を作っている間 ---- */
+.kp-loading {
+  color: var(--muted);
+  font-size: 15px;
+  animation: kp-loading-pulse 1.2s ease-in-out infinite;
+}
+@keyframes kp-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}

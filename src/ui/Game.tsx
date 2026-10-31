@@ -28,9 +28,13 @@ interface GameProps {
   onRetry: () => void;
   /** 次のステージが無ければ undefined。 */
   onNext?: () => void;
+  /** クリアしたときの記録。渡さなければ本編の記録に書く。 */
+  onClear?: (stars: 1 | 2 | 3, turns: number) => void;
+  /** 結果カードの「戻る」ボタンの文言。 */
+  backLabel?: string;
 }
 
-export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
+export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabel = 'ステージせんたく' }: GameProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const {
@@ -51,8 +55,11 @@ export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
 
   useEffect(() => {
     if (state.status === 'won') {
-      recordClear(level.id, computeStars(level.tStar, level.s, actionsTaken), actionsTaken);
+      const earned = computeStars(level.tStar, level.s, actionsTaken);
+      if (onClear) onClear(earned, actionsTaken);
+      else recordClear(level.id, earned, actionsTaken);
     }
+    // onClear は描くたびに作り直されるので見ない（クリアの瞬間に 1 回だけ書けばよい）
   }, [state.status, level, actionsTaken]);
 
   const stars = computeStars(level.tStar, level.s, actionsTaken);
@@ -158,7 +165,7 @@ export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
                 もういちど
               </button>
               <button type="button" className="home-btn" onClick={onBack}>
-                ステージせんたく
+                {backLabel}
               </button>
             </div>
           </div>

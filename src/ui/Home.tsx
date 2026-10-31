@@ -4,6 +4,7 @@ import kingArt from '@/assets/sprites/king-player.png';
 import { navigate } from '@/core/router';
 import { chapters, LEVELS } from '@/levels/index';
 import type { LevelDef } from '@/levels/index';
+import { clearEndlessProgress, getEndlessProgress } from '@/storage/endless';
 import { clearAllProgress, getProgress, isChapterUnlocked } from '@/storage/progress';
 
 import { GearIcon } from './icons';
@@ -35,9 +36,11 @@ export function Home() {
   const clearedCount = progress.filter((p) => p.cleared).length;
   const starCount = progress.reduce((sum, p) => sum + p.bestStars, 0);
   const started = clearedCount > 0;
+  const endlessNext = getEndlessProgress().next;
 
   const handleClearRecords = () => {
     clearAllProgress();
+    clearEndlessProgress();
     window.location.reload();
   };
 
@@ -73,6 +76,10 @@ export function Home() {
           </button>
           <button type="button" className="home-btn" onClick={() => setSheet('levels')}>
             ステージをえらぶ
+          </button>
+          <button type="button" className="home-btn" onClick={() => navigate({ name: 'endless', n: endlessNext })}>
+            むげん
+            <span className="home-btn-sub">{endlessNext > 1 ? `つづき ${endlessNext} めんめ` : '番号ごとに新しい面'}</span>
           </button>
         </div>
 
