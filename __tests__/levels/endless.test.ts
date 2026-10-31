@@ -66,4 +66,12 @@ describe('むげんの生成器', () => {
     expect(Math.max(...counts.values())).toBeLessThanOrEqual(12);
     for (let i = 2; i < ids.length; i++) expect(ids[i] === ids[i - 1] && ids[i] === ids[i - 2]).toBe(false);
   });
+
+  it('1〜10 面には、小屋・採掘場・敵の攻撃（5 章以降で教える仕掛け）が出ない', () => {
+    for (let n = 1; n <= 10; n++) {
+      const { level } = generateEndless(n);
+      expect(level.board.nodes.some((x) => x.type === 'hut' || x.type === 'mine')).toBe(false);
+      expect(level.attacks).toEqual([]);
+    }
+  });
 });

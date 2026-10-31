@@ -141,7 +141,15 @@ function occupied(level: LevelDef): Set<string> {
 }
 
 /** 揺らし方の一覧。どれも 1 か所だけ変える。変えられなければ false。 */
-const MUTATIONS: ((lv: LevelDef, rand: Rand) => boolean)[] = [
+/** 施設を本編で初めて教える章（仕様書 §13 の順）。 */
+const INTRO_CHAPTER: Record<NodeType, number> = { road: 1, training: 3, wall: 4, hut: 5, mine: 6 };
+
+/** 足す施設の種類を、番号の目安の章で重みづけして選ぶ。まだ教えていない施設は出にくい（KP-15）。 */
+function pickFacility(rand: Rand, types: NodeType[], reach: number): NodeType {
+  return pickWeighted(rand, types, (t) => Math.exp(-Math.max(0, INTRO_CHAPTER[t] - reach) / 0.5));
+}
+
+const MUTATIONS: ((lv: LevelDef, rand: Rand, reach: number) => boolean)[] = [
   // 駒のレベル
   (lv, rand) => {
     const p = pick(rand, lv.initialPieces);
@@ -204,12 +212,12 @@ const MUTATIONS: ((lv: LevelDef, rand: Rand) => boolean)[] = [
     return true;
   },
   // 空いている道を施設に変える
-  (lv, rand) => {
+  (lv, rand, reach) => {
     const taken = occupied(lv);
     const free = lv.board.nodes.filter((x) => !taken.has(x.id) && x.type === 'road');
     if (free.length === 0) return false;
     const node = pick(rand, free);
-    const type = pick<NodeType>(rand, ['training', 'mine', 'wall', 'hut']);
+    const type = pickFacility(rand, ['training', 'mine', 'wall', 'hut'], reach);
     node.type = type;
     if (type === 'hut') {
       node.level = 0;
@@ -220,11 +228,11 @@ const MUTATIONS: ((lv: LevelDef, rand: Rand) => boolean)[] = [
     return true;
   },
   // 行き止まりの枝を 1 つ足す（道・訓練場・採掘場・小屋）
-  (lv, rand) => {
+  (lv, rand, reach) => {
     if (lv.board.nodes.length >= 9) return false;
     const at = pick(rand, lv.board.nodes);
     const id = `x${lv.board.nodes.length + 1}`;
-    const type = pick<NodeType>(rand, ['road', 'training', 'mine', 'hut']);
+    const type = pickFacility(rand, ['road', 'training', 'mine', 'hut'], reach);
     const node: BoardNode = { id, type, level: type === 'road' || type === 'hut' ? 0 : 1 + Math.floor(rand() * 3) };
     if (type === 'hut') node.hutOwner = 'player';
     lv.board.nodes.push(node);
@@ -285,13 +293,13 @@ function finish(lv: LevelDef, n: number, tStar: number): LevelDef {
 }
 
 /** 1 つの候補を作る。 */
-function candidate(rand: Rand, base: LevelDef): { lv: LevelDef; base: LevelDef } | null {
+function candidate(rand: Rand, base: LevelDef, reach: number): { lv: LevelDef; base: LevelDef } | null {
   const lv = cloneLevel(base);
   const before = fingerprint(lv);
   const count = 1 + Math.floor(rand() * 3);
   let applied = 0;
   for (let tries = 0; applied < count && tries < count * 4; tries++) {
-    if (pick(rand, MUTATIONS)(lv, rand)) applied++;
+    if (pick(rand, MUTATIONS)(lv, rand, reach)) applied++;
   }
   if (fingerprint(lv) === before) return null;
   relabel(lv, rand);
@@ -325,7 +333,7 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
       attempts++;
       // はじめは決めておいた骨格を揺らす。その骨格では狙いの手数に届かないときは、骨格も選び直す
       const base = attempts <= PLANNED_TRIES ? planned : pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent));
-      const c = candidate(rand, base);
+      const c = candidate(rand, base, reachChapter(n));
       if (!c) continue;
       const tStar = accept(c.lv, stages[si], seedOf(n) ^ attempts);
       if (tStar !== null) {
