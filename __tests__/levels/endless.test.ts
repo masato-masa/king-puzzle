@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { solve } from '@/engine/solver';
-import { generateEndless, maxRandomRate, targetRange } from '@/levels/endless';
+import { generateEndless, maxRandomRate, plannedBase, targetRange } from '@/levels/endless';
 import { LEVELS } from '@/levels/index';
 import { MIN_PIECE_PX, piecePx, randomWinRate } from '@/levels/metrics';
 
@@ -49,5 +49,21 @@ describe('むげんの生成器', () => {
       const r = generateEndless(n, 1);
       expect(solve(r.level, 20)!.tStar).toBe(r.level.tStar);
     }
+  });
+
+  // KP-15: 序盤にまだ教えていない仕掛けを出さない（P4）。骨格を偏らせない（P11）
+  it('1〜10 面の骨格は 1〜4 章から出る', () => {
+    for (let n = 1; n <= 10; n++) {
+      const chapter = LEVELS.find((l) => l.id === generateEndless(n).baseId)!.chapter;
+      expect(chapter).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('1〜60 面で、1 つの骨格が全体の 2 割を超えず、同じ骨格が 3 面続かない', () => {
+    const ids = Array.from({ length: 60 }, (_, i) => plannedBase(i + 1).id);
+    const counts = new Map<string, number>();
+    ids.forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1));
+    expect(Math.max(...counts.values())).toBeLessThanOrEqual(12);
+    for (let i = 2; i < ids.length; i++) expect(ids[i] === ids[i - 1] && ids[i] === ids[i - 2]).toBe(false);
   });
 });

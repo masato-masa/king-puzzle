@@ -70,17 +70,54 @@ function pickWeighted<T>(rand: Rand, items: T[], weight: (item: T) => number): T
   return items[items.length - 1];
 }
 
+/** 入り口の 2 面（ch1-1・ch2-1）は当てずっぽうで勝てる面なので骨格にしない。 */
+const POOL = LEVELS.filter((l) => l.id !== 'ch1-1' && l.id !== 'ch2-1');
+
+/** n 面目で「もう出てよい」章の目安。1 面目は 2 章、5 面ごとに 1 章ずつ進む（KP-15）。 */
+export function reachChapter(n: number): number {
+  return 2 + (n - 1) / 5;
+}
+
+/** 同じ骨格が続かないように、直近に使った骨格の重みを下げる。何面さかのぼるか。 */
+const RECENT = 6;
+
 /**
- * 骨格にする面の重み。最短手数が狙いに近いほど、また番号のわりに先の章でないほど選ばれやすい。
- * 条件で締め出さず、重みで寄せる（CLAUDE.md）。
+ * 骨格にする面の重み。条件で締め出さず、重みで寄せる（CLAUDE.md）。
+ * - 章: 目安より先の章ほど急に出にくく（まだ教えていない仕掛けを序盤に出さない。P4）、
+ *   目安から 4 章以上遅れた章はゆるやかに出にくくなる（後半に入門の面ばかりにならない）
+ * - 最短手数: 狙いに近いほど少し出やすい。揺らしで手数は動くので弱めにかける（偏り P11 の原因だった）
+ * - 直近: 直前の骨格は 0.02 倍、3 面以内は 0.1 倍、6 面以内は 0.4 倍
  */
-function baseWeight(level: LevelDef, n: number): number {
+function baseWeight(level: LevelDef, n: number, recent: string[]): number {
   const { lo, hi } = targetRange(n);
   const center = (lo + hi) / 2;
-  const closeness = Math.exp(-Math.abs(level.tStar - center) / 1.5);
-  const reachChapter = 3 + Math.floor(n / 3);
-  const chapterWeight = level.chapter <= reachChapter ? 1 : 0.15;
-  return closeness * chapterWeight;
+  const closeness = Math.exp(-Math.abs(level.tStar - center) / 3);
+  const reach = reachChapter(n);
+  const ahead = Math.max(0, level.chapter - reach);
+  const behind = Math.max(0, reach - level.chapter - 4);
+  const chapterWeight = Math.exp(-ahead / 0.5) * Math.exp(-behind / 4);
+  const at = recent.lastIndexOf(level.id);
+  const age = at === -1 ? Infinity : recent.length - at;
+  const recency = age <= 1 ? 0.02 : age <= 3 ? 0.1 : age <= RECENT ? 0.4 : 1;
+  return closeness * chapterWeight * recency;
+}
+
+/** 面の番号ごとに決めた骨格の列。直近の骨格に依存するので 1 から順に作って覚えておく（決定的）。 */
+const plannedBases: string[] = [];
+
+/** n 面目の骨格（最も厳しい段で使う）。種は番号だけで決まり、生成の成否には左右されない。 */
+export function plannedBase(n: number): LevelDef {
+  for (let k = plannedBases.length + 1; k <= n; k++) {
+    const rand = rng(seedOf(k) ^ 0x5eed);
+    const recent = plannedBases.slice(Math.max(0, k - 1 - RECENT), k - 1);
+    plannedBases.push(pickWeighted(rand, POOL, (l) => baseWeight(l, k, recent)).id);
+  }
+  return POOL.find((l) => l.id === plannedBases[n - 1])!;
+}
+
+function recentBases(n: number): string[] {
+  if (n > 1) plannedBase(n - 1);
+  return plannedBases.slice(Math.max(0, n - 1 - RECENT), n - 1);
 }
 
 function cloneLevel(level: LevelDef): LevelDef {
@@ -237,6 +274,9 @@ function stagesFor(n: number): Stage[] {
   ];
 }
 
+/** 決めておいた骨格で試す回数。これを過ぎたら骨格を重みで選び直す（条件は緩めない）。 */
+const PLANNED_TRIES = 16;
+
 /** 段ごとに使う予算の割合。 */
 const STAGE_SHARE = [0.6, 0.25, 0.15];
 
@@ -245,8 +285,7 @@ function finish(lv: LevelDef, n: number, tStar: number): LevelDef {
 }
 
 /** 1 つの候補を作る。 */
-function candidate(n: number, rand: Rand, pool: LevelDef[]): { lv: LevelDef; base: LevelDef } | null {
-  const base = pickWeighted(rand, pool, (l) => baseWeight(l, n));
+function candidate(rand: Rand, base: LevelDef): { lv: LevelDef; base: LevelDef } | null {
   const lv = cloneLevel(base);
   const before = fingerprint(lv);
   const count = 1 + Math.floor(rand() * 3);
@@ -275,15 +314,18 @@ function accept(lv: LevelDef, stage: Stage, seed: number): number | null {
  */
 export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResult {
   const rand = rng(seedOf(n));
-  // 入り口の 2 面（ch1-1・ch2-1）は当てずっぽうで勝てる面なので骨格にしない
-  const pool = LEVELS.filter((l) => l.chapter > 1 || l.order > 1).filter((l) => l.id !== 'ch2-1');
+  const planned = plannedBase(n);
+  // 選び直すときは、決めておいた骨格（うまくいかなかった方）も直近扱いにする
+  const recent = [...recentBases(n), planned.id];
   const stages = stagesFor(n);
   let attempts = 0;
   for (let si = 0; si < stages.length; si++) {
     const share = Math.round(budget * STAGE_SHARE[si]);
     for (let k = 0; k < share; k++) {
       attempts++;
-      const c = candidate(n, rand, pool);
+      // はじめは決めておいた骨格を揺らす。その骨格では狙いの手数に届かないときは、骨格も選び直す
+      const base = attempts <= PLANNED_TRIES ? planned : pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent));
+      const c = candidate(rand, base);
       if (!c) continue;
       const tStar = accept(c.lv, stages[si], seedOf(n) ^ attempts);
       if (tStar !== null) {
@@ -292,6 +334,6 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     }
   }
   // 最終段: 本編の面をそのまま出す。本編の面は監査テストで解けることを確かめてある
-  const base = pickWeighted(rand, pool, (l) => baseWeight(l, n));
+  const base = budget > 0 ? pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent)) : planned;
   return { level: finish(cloneLevel(base), n, base.tStar), stage: 3, attempts, baseId: base.id };
 }

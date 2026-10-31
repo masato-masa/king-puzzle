@@ -6,9 +6,10 @@
  *   npx tsx scripts/audit-endless.ts 1 100 -v   # 1 面ずつ出す
  *
  * 見るもの: 生成時間（平均・最大）、どの段で採れたか（3 段目＝本編の面そのまま＝失敗）、T* の分布、
- * 当てずっぽう勝率（2000 回で測り直す）、骨格にした面の偏り。
+ * 当てずっぽう勝率（2000 回で測り直す）、骨格にした面の偏り（骨格ごとの回数・1〜10 面に出た章・同じ骨格の連続）。
  */
 import { generateEndless, targetRange } from '../src/levels/endless';
+import { LEVELS } from '../src/levels/index';
 import { piecePx, randomWinRate } from '../src/levels/metrics';
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith('-'));
@@ -23,6 +24,10 @@ const bases = new Map<string, number>();
 const rates: number[] = [];
 let outOfRange = 0;
 let minPx = Infinity;
+const earlyChapters = new Map<number, number>();
+let sameAsPrev = 0;
+let prevBase = '';
+const chapterOf = (id: string) => LEVELS.find((l) => l.id === id)!.chapter;
 
 for (let n = from; n <= to; n++) {
   const t0 = performance.now();
@@ -32,6 +37,9 @@ for (let n = from; n <= to; n++) {
   stages[r.stage]++;
   tStars.set(r.level.tStar, (tStars.get(r.level.tStar) ?? 0) + 1);
   bases.set(r.baseId, (bases.get(r.baseId) ?? 0) + 1);
+  if (n <= 10) earlyChapters.set(chapterOf(r.baseId), (earlyChapters.get(chapterOf(r.baseId)) ?? 0) + 1);
+  if (r.baseId === prevBase) sameAsPrev++;
+  prevBase = r.baseId;
   const rate = randomWinRate(r.level, 2000, n);
   rates.push(rate);
   const { lo, hi } = targetRange(n);
@@ -57,3 +65,5 @@ const rs = [...rates].sort((a, b) => a - b);
 console.log(`当てずっぽう勝率（2000 回）: 中央 ${(rs[Math.floor(count / 2)] * 100).toFixed(1)}% / 最大 ${(rs[count - 1] * 100).toFixed(1)}%`);
 console.log(`駒の最小: ${minPx.toFixed(0)}px`);
 console.log(`骨格: ${[...bases.entries()].sort((a, b) => b[1] - a[1]).map(([id, c]) => `${id}=${c}`).join(' ')}`);
+console.log(`骨格の種類: ${bases.size} / 最多 ${Math.max(...bases.values())} 面 / 直前と同じ骨格: ${sameAsPrev} 回`);
+console.log(`1〜10 面に出た章: ${[...earlyChapters.entries()].sort((a, b) => a[0] - b[0]).map(([c, k]) => `章${c}=${k}`).join(' ')}`);
