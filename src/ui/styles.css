@@ -131,7 +131,7 @@ body,
   opacity: 0.5;
   filter: grayscale(0.6);
 }
-/* 兵のレベル。色は持ち主の色で、絵が小さくても敵味方が分かる。 */
+/* 駒のレベル（王も兵も）。色は持ち主の色で、絵が小さくても敵味方が分かる。 */
 .kp-piece-level {
   position: absolute;
   right: 0;
@@ -153,6 +153,54 @@ body,
 }
 .kp-piece-enemy .kp-piece-level {
   background: var(--warn);
+}
+
+/* 攻撃の狙い。ノードの上に「弓2」のように、種類と残りターンを出す。次で飛んでくるものは脈打つ。 */
+.kp-attack-marks {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: calc(-16px * var(--s, 1));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  pointer-events: none;
+}
+.kp-attack-mark {
+  padding: 0 calc(5px * var(--s, 1));
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  background: #8a5a44;
+  color: #fff;
+  font-size: max(9px, calc(11px * var(--s, 1)));
+  font-weight: 800;
+  line-height: calc(16px * var(--s, 1));
+  white-space: nowrap;
+}
+.kp-attack-mark-soon {
+  background: var(--warn);
+  animation: kp-mark-pulse 900ms ease-in-out infinite;
+}
+@keyframes kp-mark-pulse {
+  50% {
+    transform: scale(1.15);
+  }
+}
+/* 封鎖中のノード。入れないことを × で見せる。 */
+.kp-node-blocked::after {
+  content: '×';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgb(200 60 60 / 0.25);
+  color: var(--warn);
+  font-size: calc(40px * var(--s, 1));
+  font-weight: 800;
+  pointer-events: none;
 }
 
 .kp-result-overlay {

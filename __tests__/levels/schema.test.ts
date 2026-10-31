@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { ch1_1 } from '@/levels/chapter1';
-import { ch2_1 } from '@/levels/chapter2';
-import { ch3_1 } from '@/levels/chapter3';
+import { LEVELS } from '@/levels/index';
 import type { LevelDef } from '@/levels/types';
 
-const levels: LevelDef[] = [ch1_1, ch2_1, ch3_1];
+const levels: LevelDef[] = LEVELS;
 
 describe('level schema', () => {
   it.each(levels)('$id: king が両陣営に1つずつ居る', (level) => {

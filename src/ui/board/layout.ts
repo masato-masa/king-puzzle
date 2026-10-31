@@ -6,7 +6,7 @@ export interface NodePosition {
   y: number;
 }
 
-const COL_GAP = 140;
+const COL_GAP = 115;
 const ROW_GAP = 100;
 
 /**
