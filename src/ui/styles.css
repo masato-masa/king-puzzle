@@ -112,10 +112,38 @@ body,
 }
 
 .kp-piece {
+  /* 駒はノードとは別の層に置き、ノードの中心へ left/top で動かす。移動がバネのように滑る（C2）。 */
+  z-index: 2;
   width: calc(62px * var(--s, 1));
   height: calc(62px * var(--s, 1));
   transform: translate(-50%, -60%);
+  transition:
+    left 280ms cubic-bezier(0.3, 1.35, 0.5, 1),
+    top 280ms cubic-bezier(0.3, 1.35, 0.5, 1);
 }
+/* 倒された駒は、その場で白く弾けて消える。 */
+.kp-piece-gone {
+  animation: kp-piece-gone 480ms ease-out forwards;
+}
+@keyframes kp-piece-gone {
+  0% { opacity: 1; filter: brightness(1); }
+  30% { opacity: 1; filter: brightness(2.2); transform: translate(-50%, -60%) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(0.4) rotate(-20deg); }
+}
+/* レベルが上がったら弾み、下がったら揺れる。 */
+.kp-piece-up .kp-piece-img { animation: kp-piece-up 420ms cubic-bezier(0.2, 1.6, 0.4, 1); }
+.kp-piece-up .kp-piece-level { animation: kp-level-pop 420ms cubic-bezier(0.2, 1.6, 0.4, 1); }
+.kp-piece-down .kp-piece-img { animation: kp-piece-shake 360ms ease-in-out; }
+.kp-piece-down .kp-piece-level { animation: kp-level-pop 360ms ease-out; background: var(--warn); }
+.kp-piece-new .kp-piece-img { animation: kp-piece-in 360ms cubic-bezier(0.2, 1.5, 0.4, 1); }
+@keyframes kp-piece-up { 40% { transform: translateY(-14%) scale(1.12); } }
+@keyframes kp-level-pop { 40% { transform: scale(1.6); } }
+@keyframes kp-piece-shake {
+  20% { transform: translateX(-8%) rotate(-6deg); }
+  50% { transform: translateX(8%) rotate(6deg); }
+  80% { transform: translateX(-4%); }
+}
+@keyframes kp-piece-in { 0% { transform: scale(0.2); opacity: 0; } }
 .kp-piece-img {
   display: block;
   width: 100%;

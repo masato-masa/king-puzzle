@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { computeLayout, fitLayout } from './layout';
 import { resolveTrackingTarget } from '@/engine/attacks';
@@ -93,6 +93,7 @@ export function Board({
 
   const pieceAt = (nodeId: string): Piece | undefined => state.pieces.find((p) => p.nodeId === nodeId);
   const marks = attackMarks(state);
+  const { ghosts, fx } = usePieceEffects(state.pieces);
 
   return (
     <div ref={frameRef} className="kp-board-frame">
@@ -137,22 +138,6 @@ export function Board({
               <img className={`kp-building${piece ? ' kp-building-under' : ''}`} src={sprite(building)} alt="" draggable={false} />
             )}
             {facilityName && <span className="kp-node-level">Lv{node.level}</span>}
-            {piece && (
-              <div
-                className={`kp-piece kp-piece-${piece.owner}${piece.isKing ? ' kp-piece-king' : ''}${
-                  piece.id === selectedPieceId ? ' kp-piece-selected' : ''
-                }${piece.snared > 0 ? ' kp-piece-snared' : ''}`}
-                aria-label={`${piece.owner === 'player' ? '自分' : '相手'}の${piece.isKing ? '王' : '兵'} Lv${piece.level}`}
-              >
-                <img
-                  className="kp-piece-img"
-                  src={sprite(`${piece.isKing ? 'king' : 'soldier'}-${piece.owner}`)}
-                  alt=""
-                  draggable={false}
-                />
-                <span className="kp-piece-level">{piece.level}</span>
-              </div>
-            )}
             {marks[node.id] && (
               <div className="kp-attack-marks">
                 {marks[node.id].map((m) => (
@@ -170,7 +155,71 @@ export function Board({
           </div>
         );
       })}
+      {/* 枠を測る前に置くと、倍率 0 の位置から滑って飛んでくる。測ってから置く。 */}
+      {box.width > 0 &&
+        [...state.pieces.map((p) => ({ piece: p, gone: false })), ...ghosts.map((p) => ({ piece: p, gone: true }))].map(
+        ({ piece, gone }) => {
+          const pos = positions[piece.nodeId];
+          const effect = gone ? ' kp-piece-gone' : fx[piece.id] ? ` kp-piece-${fx[piece.id]}` : '';
+          return (
+            <div
+              key={gone ? `${piece.id}-gone` : piece.id}
+              className={`kp-piece kp-piece-${piece.owner}${piece.isKing ? ' kp-piece-king' : ''}${
+                piece.id === selectedPieceId ? ' kp-piece-selected' : ''
+              }${piece.snared > 0 ? ' kp-piece-snared' : ''}${effect}`}
+              style={{ left: (pos.x - minX) * scale, top: (pos.y - minY) * scale }}
+              aria-label={`${piece.owner === 'player' ? '自分' : '相手'}の${piece.isKing ? '王' : '兵'} Lv${piece.level}`}
+            >
+              <img
+                className="kp-piece-img"
+                src={sprite(`${piece.isKing ? 'king' : 'soldier'}-${piece.owner}`)}
+                alt=""
+                draggable={false}
+              />
+              <span className="kp-piece-level">{piece.level}</span>
+            </div>
+          );
+        },
+        )}
     </div>
     </div>
   );
+}
+
+const FX_MS = 520;
+
+/**
+ * 駒の出入りとレベルの上下を拾って、短い演出の印を付ける（C2 手応え・C3 失敗の納得）。
+ * 消えた駒は少しのあいだ「消える演出」用に残す。
+ */
+function usePieceEffects(pieces: Piece[]) {
+  const prev = useRef<Map<string, Piece>>(new Map(pieces.map((p) => [p.id, p])));
+  const [ghosts, setGhosts] = useState<Piece[]>([]);
+  const [fx, setFx] = useState<Record<string, 'up' | 'down' | 'new'>>({});
+
+  useEffect(() => {
+    const now = new Map(pieces.map((p) => [p.id, p]));
+    const gone = [...prev.current.values()].filter((p) => !now.has(p.id));
+    const changes: Record<string, 'up' | 'down' | 'new'> = {};
+    for (const p of pieces) {
+      const before = prev.current.get(p.id);
+      if (!before) changes[p.id] = 'new';
+      else if (p.level > before.level) changes[p.id] = 'up';
+      else if (p.level < before.level) changes[p.id] = 'down';
+    }
+    prev.current = now;
+    if (gone.length === 0 && Object.keys(changes).length === 0) return;
+    // 自分の駒が倒された・削られたときだけ、指に短く返す。
+    const hurt = gone.some((p) => p.owner === 'player') || Object.entries(changes).some(([, c]) => c === 'down');
+    if (hurt) navigator.vibrate?.(40);
+    setGhosts(gone);
+    setFx(changes);
+    const timer = window.setTimeout(() => {
+      setGhosts([]);
+      setFx({});
+    }, FX_MS);
+    return () => window.clearTimeout(timer);
+  }, [pieces]);
+
+  return { ghosts, fx };
 }

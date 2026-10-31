@@ -29,7 +29,7 @@ export const ch8_1: LevelDef = {
     { id: 'a1', type: 'arrow', target: { kind: 'node', nodeId: 'n3' }, period: 2 },
   ],
   tStar: 5, // scripts/solveLevel.ts で実測済み
-  s: 1,
+  s: 3,
 };
 
 export const ch8_2: LevelDef = {
@@ -59,7 +59,7 @@ export const ch8_2: LevelDef = {
     { id: 'a1', type: 'cannon', target: { kind: 'node', nodeId: 'n2' }, period: 3, initial: 2 },
   ],
   tStar: 5, // scripts/solveLevel.ts で実測済み
-  s: 1,
+  s: 3,
 };
 
 export const ch8_3: LevelDef = {
@@ -91,5 +91,5 @@ export const ch8_3: LevelDef = {
     { id: 'a1', type: 'arrow', target: { kind: 'node', nodeId: 'n4' }, period: 2 },
   ],
   tStar: 8, // scripts/solveLevel.ts で実測済み
-  s: 2,
+  s: 3,
 };

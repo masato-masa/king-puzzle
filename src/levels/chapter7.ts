@@ -25,7 +25,7 @@ export const ch7_1: LevelDef = {
   initialCoins: 4,
   attacks: [],
   tStar: 6, // scripts/solveLevel.ts で実測済み
-  s: 2,
+  s: 3,
 };
 
 export const ch7_2: LevelDef = {
@@ -55,5 +55,5 @@ export const ch7_2: LevelDef = {
   initialCoins: 6,
   attacks: [],
   tStar: 8, // scripts/solveLevel.ts で実測済み
-  s: 2,
+  s: 3,
 };

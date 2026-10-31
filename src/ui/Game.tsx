@@ -87,6 +87,9 @@ export function Game({ level, onBack, onHelp, onRetry, onNext }: GameProps) {
         <div className="status-bar">
           <span className="stat">コイン {state.coins}</span>
           <span className="stat">のこり {remainingTurns}ターン</span>
+          <span className="stat" aria-label={`星3つは ${level.tStar} 手以内`}>
+            ★3 {level.tStar}手
+          </span>
           {state.attacks.map((attack, i) => (
             <span key={attack.id} className="stat">
               {ATTACK_NAME[attack.type]} あと{state.attackStates[i].remaining}

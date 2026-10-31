@@ -32,7 +32,7 @@ export const ch9_1: LevelDef = {
     { id: 'b1', type: 'blockade', target: { kind: 'node', nodeId: 'n3' }, period: 3, initial: 1, duration: 2 },
   ],
   tStar: 4, // scripts/solveLevel.ts で実測済み
-  s: 1,
+  s: 3,
 };
 
 export const ch9_2: LevelDef = {
@@ -64,5 +64,5 @@ export const ch9_2: LevelDef = {
     { id: 's1', type: 'snare', target: { kind: 'node', nodeId: 'n4' }, period: 3, initial: 3, duration: 2 },
   ],
   tStar: 5, // scripts/solveLevel.ts で実測済み
-  s: 1,
+  s: 3,
 };
