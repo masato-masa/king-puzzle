@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { solve } from '@/engine/solver';
 import { generateEndless, maxRandomRate, plannedBase, targetRange } from '@/levels/endless';
 import { LEVELS } from '@/levels/index';
 import { MIN_PIECE_PX, piecePx, randomWinRate } from '@/levels/metrics';
+
+// 生成とソルバーを何十回も回すので、既定の 5 秒では重い機械で切れる
+vi.setConfig({ testTimeout: 30_000 });
 
 describe('むげんの生成器', () => {
   it('同じ番号からは同じ面が出る（種は番号だけで決まる）', () => {
