@@ -7,6 +7,7 @@
 // 大きさは縦横比を保ったまま正方形に収める。余った方向は透明のまま残す。
 //
 //   node scripts/slice-sprites.mjs sheet
+//   node scripts/slice-sprites.mjs stable
 
 import sharp from 'sharp';
 import { mkdirSync } from 'node:fs';
@@ -33,6 +34,15 @@ const SHEETS = {
       ['mine', 1, 1],
       ['training', 1, 1],
       ['wall', 1, 1], // 切り出したあと旗を青→赤に塗り替えた（KP-3: 自分の色と紛らわしい）。切り直したら塗り直す
+    ],
+  },
+  // 馬小屋（KP-14）。sheet.png を見本に添付して、同じ画風で描かせた 2 枚目のシート
+  stable: {
+    src: 'assets-src/stable-sheet.png',
+    out: 'src/assets/sprites',
+    items: [
+      ['stable', 1, 1],
+      ['horseshoe', 1, 1], // 駒の速さの印（🐎2 の 🐎 を置き換える）
     ],
   },
 };

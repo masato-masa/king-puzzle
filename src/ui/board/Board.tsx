@@ -19,6 +19,8 @@ const BUILDING: Partial<Record<BoardNode['type'], string>> = {
   wall: 'wall',
   mine: 'mine',
   training: 'training',
+  // KP-14: 絵文字の 🐎 から、assets-src/stable-sheet.png を切り出した絵へ
+  stable: 'stable',
 };
 
 const FACILITY_NAME: Partial<Record<BoardNode['type'], string>> = {
@@ -26,11 +28,6 @@ const FACILITY_NAME: Partial<Record<BoardNode['type'], string>> = {
   mine: '鉱山',
   training: '訓練所',
   stable: '馬小屋',
-};
-
-/** 絵の無い施設は文字の絵で出す（馬小屋は KP-13 で足した。シートに絵が無い）。 */
-const GLYPH: Partial<Record<BoardNode['type'], string>> = {
-  stable: '🐎',
 };
 
 const ATTACK_SHORT: Record<AttackType, string> = {
@@ -146,11 +143,6 @@ export function Board({
               else if (piece && piece.owner === 'player') onSelectPiece(piece);
             }}
           >
-            {GLYPH[node.type] && (
-              <span className={`kp-building kp-glyph${piece ? ' kp-building-under' : ''}`} aria-hidden>
-                {GLYPH[node.type]}
-              </span>
-            )}
             {building && (
               <img className={`kp-building${piece ? ' kp-building-under' : ''}`} src={sprite(building)} alt="" draggable={false} />
             )}
@@ -196,7 +188,12 @@ export function Board({
                 draggable={false}
               />
               <span className="kp-piece-level">{piece.level}</span>
-              {piece.speed > 1 && <span className="kp-piece-speed">🐎{piece.speed}</span>}
+              {piece.speed > 1 && (
+                <span className="kp-piece-speed">
+                  <img className="kp-piece-speed-icon" src={sprite('horseshoe')} alt="" draggable={false} />
+                  {piece.speed}
+                </span>
+              )}
             </div>
           );
         },
