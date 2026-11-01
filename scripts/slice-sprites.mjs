@@ -36,7 +36,7 @@ const SHEETS = {
       ['wall', 1, 1], // 切り出したあと旗を青→赤に塗り替えた（KP-3: 自分の色と紛らわしい）。切り直したら塗り直す
     ],
   },
-  // 馬小屋（KP-14）。sheet.png を見本に添付して、同じ画風で描かせた 2 枚目のシート
+  // 馬小屋（KP-16）。sheet.png を見本に添付して、同じ画風で描かせた 2 枚目のシート
   stable: {
     src: 'assets-src/stable-sheet.png',
     out: 'src/assets/sprites',

@@ -19,7 +19,7 @@ const BUILDING: Partial<Record<BoardNode['type'], string>> = {
   wall: 'wall',
   mine: 'mine',
   training: 'training',
-  // KP-14: 絵文字の 🐎 から、assets-src/stable-sheet.png を切り出した絵へ
+  // KP-16: 絵文字の 🐎 から、assets-src/stable-sheet.png を切り出した絵へ
   stable: 'stable',
 };
 
