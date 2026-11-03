@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import starOnArt from '@/assets/sprites/star-on.png';
-import starOffArt from '@/assets/sprites/star-off.png';
 import { navigate } from '@/core/router';
 import { chapters, LEVELS } from '@/levels/index';
 import type { LevelDef } from '@/levels/index';
@@ -10,6 +9,7 @@ import { clearAllProgress, getProgress, isChapterUnlocked } from '@/storage/prog
 
 import { GearIcon } from './icons';
 import { SettingsSheet } from './SettingsSheet';
+import { StageMap } from './StageMap';
 
 type Sheet = 'none' | 'settings' | 'levels';
 
@@ -91,48 +91,7 @@ export function Home() {
       </button>
 
       {sheet === 'settings' && <SettingsSheet onClose={() => setSheet('none')} />}
-      {sheet === 'levels' && <LevelSheet open={open} onClose={() => setSheet('none')} />}
-    </div>
-  );
-}
-
-/** ステージ一覧。章ごとに並べ、まだ開いていない章は押せない。 */
-function LevelSheet({ open, onClose }: { open: Set<string>; onClose: () => void }) {
-  return (
-    <div className="overlay" onClick={onClose}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <h2 className="sheet-title">ステージ</h2>
-        <div className="sheet-list">
-          {chapters().map(({ chapter, levels }) => (
-            <section key={chapter} className="level-chapter">
-              <h3 className="level-chapter-title">章 {chapter}</h3>
-              {levels.map((level) => {
-                const p = getProgress(level.id);
-                const locked = !open.has(level.id);
-                return (
-                  <button
-                    key={level.id}
-                    type="button"
-                    className="sheet-row level-row"
-                    disabled={locked}
-                    onClick={() => navigate({ name: 'level', levelId: level.id })}
-                  >
-                    <span>{level.title}</span>
-                    <span className="level-stars" aria-label={`星 ${p.bestStars}`}>
-                      {locked ? 'まだ' : [1, 2, 3].map((n) => (
-                        <img key={n} src={n <= p.bestStars ? starOnArt : starOffArt} alt="" draggable={false} />
-                      ))}
-                    </span>
-                  </button>
-                );
-              })}
-            </section>
-          ))}
-        </div>
-        <button type="button" className="sheet-btn" onClick={onClose}>
-          とじる
-        </button>
-      </div>
+      {sheet === 'levels' && <StageMap open={open} onClose={() => setSheet('none')} />}
     </div>
   );
 }
