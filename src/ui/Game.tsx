@@ -117,20 +117,20 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
         </div>
         <div className="status-bar">
           {usesCoins && (
-            <span className="stat">
+            <span className="stat" aria-label={`コイン ${state.coins}`}>
               <img className="stat-icon" src={coinArt} alt="" draggable={false} />
-              コイン {state.coins}
+              {state.coins}
             </span>
           )}
           <span className="stat" aria-label={`のこり ${remainingTurns} ターン`}>
             <img className="stat-icon" src={hourglassArt} alt="" draggable={false} />
-            のこり {remainingTurns}手
+            {remainingTurns}手
           </span>
           <span className="stat" aria-label={`星3つは ${level.tStar} 手以内`}>
             <img className="stat-icon" src={starOnArt} alt="" draggable={false} />
             <img className="stat-icon stat-icon-tight" src={starOnArt} alt="" draggable={false} />
             <img className="stat-icon stat-icon-tight" src={starOnArt} alt="" draggable={false} />
-            {level.tStar}手以内
+            {level.tStar}手
           </span>
           {state.attacks.length > 0 && (
             <span
