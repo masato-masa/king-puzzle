@@ -36,6 +36,34 @@ const SHEETS = {
       ['wall', 1, 1], // 切り出したあと旗を青→赤に塗り替えた（KP-3: 自分の色と紛らわしい）。切り直したら塗り直す
     ],
   },
+  // 戦略ゲーム化（2026-11-03）。リアルカードバトルの画風に寄せて描き直した 8 点。sheet.png を上書きする
+  rc: {
+    src: 'assets-src/pieces-rc-sheet.png',
+    out: 'src/assets/sprites',
+    items: [
+      ['king-player', 1, 1],
+      ['king-enemy', 1, 1],
+      ['soldier-player', 1, 1],
+      ['soldier-enemy', 1, 1],
+      ['hut', 1, 1],
+      ['mine', 1, 1],
+      ['training', 1, 1],
+      ['wall', 1, 1],
+    ],
+  },
+  // 馬小屋・蹄鉄を新しい画風で描き直し、画面の小物（コイン・星・砂時計）を足した 6 点（2026-11-03）
+  extras: {
+    src: 'assets-src/extras-rc-sheet.png',
+    out: 'src/assets/sprites',
+    items: [
+      ['stable', 1, 1],
+      ['horseshoe', 1, 1],
+      ['coin', 1, 1],
+      ['star-on', 1, 1],
+      ['star-off', 1, 1],
+      ['hourglass', 1, 1],
+    ],
+  },
   // 馬小屋（KP-16）。sheet.png を見本に添付して、同じ画風で描かせた 2 枚目のシート
   stable: {
     src: 'assets-src/stable-sheet.png',

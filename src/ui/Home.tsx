@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import kingArt from '@/assets/sprites/king-player.png';
+import starOnArt from '@/assets/sprites/star-on.png';
+import starOffArt from '@/assets/sprites/star-off.png';
 import { navigate } from '@/core/router';
 import { chapters, LEVELS } from '@/levels/index';
 import type { LevelDef } from '@/levels/index';
@@ -53,9 +54,6 @@ export function Home() {
       </div>
 
       <div className="home">
-        <div className="home-art">
-          <img className="home-king" src={kingArt} alt="" />
-        </div>
         <h1 className="home-title">キングパズル</h1>
         <p className="home-sub">王を守って、相手の王をとろう</p>
 
@@ -84,7 +82,7 @@ export function Home() {
         </div>
 
         <p className="home-progress">
-          クリア {clearedCount}/{LEVELS.length}　★ {starCount}/{LEVELS.length * 3}
+          クリア {clearedCount}/{LEVELS.length}　<img className="home-star" src={starOnArt} alt="" draggable={false} /> {starCount}/{LEVELS.length * 3}
         </p>
       </div>
 
@@ -122,9 +120,7 @@ function LevelSheet({ open, onClose }: { open: Set<string>; onClose: () => void 
                     <span>{level.title}</span>
                     <span className="level-stars" aria-label={`星 ${p.bestStars}`}>
                       {locked ? 'まだ' : [1, 2, 3].map((n) => (
-                        <span key={n} className={n <= p.bestStars ? 'on' : ''}>
-                          ★
-                        </span>
+                        <img key={n} src={n <= p.bestStars ? starOnArt : starOffArt} alt="" draggable={false} />
                       ))}
                     </span>
                   </button>

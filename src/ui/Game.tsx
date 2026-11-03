@@ -9,6 +9,10 @@ import { Board } from './board/Board';
 import { useGameController } from './board/useGameController';
 import { UndoToolIcon } from './shared/tool-icons';
 import { BackIcon, GearIcon, HelpIcon } from './icons';
+import coinArt from '@/assets/sprites/coin.png';
+import hourglassArt from '@/assets/sprites/hourglass.png';
+import starOnArt from '@/assets/sprites/star-on.png';
+import starOffArt from '@/assets/sprites/star-off.png';
 import { SettingsSheet } from './SettingsSheet';
 
 /** 勝敗が決まってから結果カードを出すまで。最後の一手の音と盤面を見せ切る長さ。 */
@@ -93,7 +97,7 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
   }, [state.status]);
 
   return (
-    <div className="app">
+    <div className="app app-battle">
       <header className="header">
         <div className="header-row">
           <div className="header-left">
@@ -112,12 +116,21 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
           </div>
         </div>
         <div className="status-bar">
-          {usesCoins && <span className="stat">コイン {state.coins}</span>}
+          {usesCoins && (
+            <span className="stat">
+              <img className="stat-icon" src={coinArt} alt="" draggable={false} />
+              コイン {state.coins}
+            </span>
+          )}
           <span className="stat" aria-label={`のこり ${remainingTurns} ターン`}>
+            <img className="stat-icon" src={hourglassArt} alt="" draggable={false} />
             のこり {remainingTurns}手
           </span>
           <span className="stat" aria-label={`星3つは ${level.tStar} 手以内`}>
-            ★3 {level.tStar}手
+            <img className="stat-icon" src={starOnArt} alt="" draggable={false} />
+            <img className="stat-icon stat-icon-tight" src={starOnArt} alt="" draggable={false} />
+            <img className="stat-icon stat-icon-tight" src={starOnArt} alt="" draggable={false} />
+            {level.tStar}手以内
           </span>
           {state.attacks.length > 0 && (
             <span
@@ -168,7 +181,7 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
                 <div className="kp-stars" aria-label={`星 ${stars}`}>
                   {[0, 1, 2].map((i) => (
                     <span key={i} className={i < stars ? 'kp-star on' : 'kp-star'} style={{ animationDelay: `${180 + i * 260}ms` }}>
-                      {i < stars ? '★' : '☆'}
+                      <img src={i < stars ? starOnArt : starOffArt} alt="" draggable={false} />
                     </span>
                   ))}
                 </div>
