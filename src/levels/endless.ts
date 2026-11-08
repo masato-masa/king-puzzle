@@ -100,7 +100,8 @@ function baseWeight(level: LevelDef, n: number, recent: string[], used = 0): num
   const age = at === -1 ? Infinity : recent.length - at;
   const recency = age <= 1 ? 0.02 : age <= 3 ? 0.1 : age <= RECENT ? 0.4 : 1;
   // これまでに使った回数が多い骨格ほど出にくく（偏りをならす。使うたびに 1/(1+0.15×回数) 倍）
-  const balance = 1 / (1 + 0.15 * used);
+  // 同じ章の骨格が増えすぎないように、章ごとの使用回数でも下げる（章 14 の 4 面が 39% を占めた KP-21）
+  const balance = (1 / (1 + 0.15 * used)) * (1 / (1 + 0.05 * (chapterUsed.get(level.chapter) ?? 0)));
   return closeness * chapterWeight * recency * balance;
 }
 
@@ -108,6 +109,8 @@ function baseWeight(level: LevelDef, n: number, recent: string[], used = 0): num
 const plannedBases: string[] = [];
 /** 骨格ごとの、これまでに決めた回数（plannedBases の集計）。 */
 const usedCount = new Map<string, number>();
+/** 章ごとの、これまでに決めた回数。 */
+const chapterUsed = new Map<number, number>();
 
 /** n 面目の骨格（最も厳しい段で使う）。種は番号だけで決まり、生成の成否には左右されない。 */
 export function plannedBase(n: number): LevelDef {
@@ -117,6 +120,8 @@ export function plannedBase(n: number): LevelDef {
     const id = pickWeighted(rand, POOL, (l) => baseWeight(l, k, recent, usedCount.get(l.id) ?? 0)).id;
     plannedBases.push(id);
     usedCount.set(id, (usedCount.get(id) ?? 0) + 1);
+    const ch = POOL.find((l) => l.id === id)!.chapter;
+    chapterUsed.set(ch, (chapterUsed.get(ch) ?? 0) + 1);
   }
   return POOL.find((l) => l.id === plannedBases[n - 1])!;
 }
