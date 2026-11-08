@@ -88,7 +88,7 @@ const RECENT = 6;
  * - 最短手数: 狙いに近いほど少し出やすい。揺らしで手数は動くので弱めにかける（偏り P11 の原因だった）
  * - 直近: 直前の骨格は 0.02 倍、3 面以内は 0.1 倍、6 面以内は 0.4 倍
  */
-function baseWeight(level: LevelDef, n: number, recent: string[]): number {
+function baseWeight(level: LevelDef, n: number, recent: string[], used = 0): number {
   const { lo, hi } = targetRange(n);
   const center = (lo + hi) / 2;
   const closeness = Math.exp(-Math.abs(level.tStar - center) / 3);
@@ -99,18 +99,24 @@ function baseWeight(level: LevelDef, n: number, recent: string[]): number {
   const at = recent.lastIndexOf(level.id);
   const age = at === -1 ? Infinity : recent.length - at;
   const recency = age <= 1 ? 0.02 : age <= 3 ? 0.1 : age <= RECENT ? 0.4 : 1;
-  return closeness * chapterWeight * recency;
+  // これまでに使った回数が多い骨格ほど出にくく（偏りをならす。使うたびに 1/(1+0.15×回数) 倍）
+  const balance = 1 / (1 + 0.15 * used);
+  return closeness * chapterWeight * recency * balance;
 }
 
 /** 面の番号ごとに決めた骨格の列。直近の骨格に依存するので 1 から順に作って覚えておく（決定的）。 */
 const plannedBases: string[] = [];
+/** 骨格ごとの、これまでに決めた回数（plannedBases の集計）。 */
+const usedCount = new Map<string, number>();
 
 /** n 面目の骨格（最も厳しい段で使う）。種は番号だけで決まり、生成の成否には左右されない。 */
 export function plannedBase(n: number): LevelDef {
   for (let k = plannedBases.length + 1; k <= n; k++) {
     const rand = rng(seedOf(k) ^ 0x5eed);
     const recent = plannedBases.slice(Math.max(0, k - 1 - RECENT), k - 1);
-    plannedBases.push(pickWeighted(rand, POOL, (l) => baseWeight(l, k, recent)).id);
+    const id = pickWeighted(rand, POOL, (l) => baseWeight(l, k, recent, usedCount.get(l.id) ?? 0)).id;
+    plannedBases.push(id);
+    usedCount.set(id, (usedCount.get(id) ?? 0) + 1);
   }
   return POOL.find((l) => l.id === plannedBases[n - 1])!;
 }
@@ -166,6 +172,26 @@ const MUTATIONS: ((lv: LevelDef, rand: Rand, reach: number) => boolean)[] = [
     const next = clamp(node.level + jitter(rand), 1, node.type === 'stable' ? 3 : 5);
     if (next === node.level) return false;
     node.level = next;
+    return true;
+  },
+  // 敵の兵（王でない敵）のレベル。進軍型・居すわり型の強さが変わる
+  (lv, rand) => {
+    const foes = lv.initialPieces.filter((p) => p.owner === 'enemy' && !p.isKing);
+    if (foes.length === 0) return false;
+    const p = pick(rand, foes);
+    const next = clamp(p.level + jitter(rand), 1, 5);
+    if (next === p.level) return false;
+    p.level = next;
+    return true;
+  },
+  // 敵の兵を、空いている道へ置き直す
+  (lv, rand) => {
+    const foes = lv.initialPieces.filter((p) => p.owner === 'enemy' && !p.isKing);
+    if (foes.length === 0) return false;
+    const taken = occupied(lv);
+    const free = lv.board.nodes.filter((x) => !taken.has(x.id) && x.type === 'road');
+    if (free.length === 0) return false;
+    pick(rand, foes).nodeId = pick(rand, free).id;
     return true;
   },
   // 最初のコイン（小屋は 2 コインなので 2 ずつ）
@@ -296,10 +322,12 @@ function finish(lv: LevelDef, n: number, tStar: number): LevelDef {
 }
 
 /** 1 つの候補を作る。 */
-function candidate(rand: Rand, base: LevelDef, reach: number): { lv: LevelDef; base: LevelDef } | null {
+function candidate(rand: Rand, base: LevelDef, reach: number, lo: number): { lv: LevelDef; base: LevelDef } | null {
   const lv = cloneLevel(base);
   const before = fingerprint(lv);
-  const count = 1 + Math.floor(rand() * 3);
+  // 骨格の最短手数が狙いより短いときは、揺らしを重ねて手数を伸ばす（入門の骨格も後半に出る）
+  const gap = Math.max(0, lo - base.tStar);
+  const count = 1 + Math.floor(rand() * 3) + Math.min(gap, 3);
   let applied = 0;
   for (let tries = 0; applied < count && tries < count * 4; tries++) {
     if (pick(rand, MUTATIONS)(lv, rand, reach)) applied++;
@@ -335,8 +363,8 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     for (let k = 0; k < share; k++) {
       attempts++;
       // はじめは決めておいた骨格を揺らす。その骨格では狙いの手数に届かないときは、骨格も選び直す
-      const base = attempts <= PLANNED_TRIES ? planned : pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent));
-      const c = candidate(rand, base, reachChapter(n));
+      const base = attempts <= PLANNED_TRIES ? planned : pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent, usedCount.get(l.id) ?? 0));
+      const c = candidate(rand, base, reachChapter(n), stages[si].lo);
       if (!c) continue;
       const tStar = accept(c.lv, stages[si], seedOf(n) ^ attempts);
       if (tStar !== null) {
@@ -345,6 +373,6 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     }
   }
   // 最終段: 本編の面をそのまま出す。本編の面は監査テストで解けることを確かめてある
-  const base = budget > 0 ? pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent)) : planned;
+  const base = budget > 0 ? pickWeighted(rand, POOL, (l) => baseWeight(l, n, recent, usedCount.get(l.id) ?? 0)) : planned;
   return { level: finish(cloneLevel(base), n, base.tStar), stage: 3, attempts, baseId: base.id };
 }
