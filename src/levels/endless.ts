@@ -152,7 +152,7 @@ const INTRO_CHAPTER: Record<NodeType, number> = { road: 1, training: 3, wall: 4,
 
 /** 足す施設の種類を、番号の目安の章で重みづけして選ぶ。まだ教えていない施設は出にくい（KP-15）。 */
 function pickFacility(rand: Rand, types: NodeType[], reach: number): NodeType {
-  return pickWeighted(rand, types, (t) => Math.exp(-Math.max(0, INTRO_CHAPTER[t] - reach) / 0.5));
+  return pickWeighted(rand, types, (t) => Math.exp(-Math.max(0, INTRO_CHAPTER[t] - reach) / 0.25));
 }
 
 const MUTATIONS: ((lv: LevelDef, rand: Rand, reach: number) => boolean)[] = [
