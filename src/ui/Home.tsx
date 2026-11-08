@@ -77,7 +77,7 @@ export function Home() {
           </button>
           <button type="button" className="home-btn" onClick={() => navigate({ name: 'endless', n: endlessNext })}>
             むげん
-            <span className="home-btn-sub">{endlessNext > 1 ? `つづき ${endlessNext} めんめ` : '番号ごとに新しい面'}</span>
+            <span className="home-btn-sub">{endlessNext > 1 ? `つづき ${endlessNext} めんめ` : '本編の仕掛けで、ずっと遊べる'}</span>
           </button>
         </div>
 

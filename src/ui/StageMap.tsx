@@ -4,7 +4,7 @@ import bgMap from '@/assets/art/bg-map.webp';
 import starOffArt from '@/assets/sprites/star-off.png';
 import starOnArt from '@/assets/sprites/star-on.png';
 import { navigate } from '@/core/router';
-import { LEVELS } from '@/levels/index';
+import { chapters, LEVELS } from '@/levels/index';
 import { getProgress } from '@/storage/progress';
 
 import { BackIcon } from './icons';
@@ -40,6 +40,15 @@ export function StageMap({ open, onClose }: StageMapProps) {
   const currentIndex = LEVELS.findIndex((l, i) => open.has(l.id) && !progress[i].cleared);
   const current = currentIndex === -1 ? total - 1 : currentIndex;
   const stars = progress.reduce((sum, p) => sum + p.bestStars, 0);
+  // 最初の閉じた章の旗に「あと N 面で開く」を添える（開く条件は前の章の 7 割クリア）
+  const groups = chapters();
+  const lockedAt = groups.findIndex((g) => g.levels.every((l) => !open.has(l.id)));
+  let unlockNote: { chapter: number; need: number } | null = null;
+  if (lockedAt > 0) {
+    const prev = groups[lockedAt - 1].levels;
+    const done = prev.filter((l) => getProgress(l.id).cleared).length;
+    unlockNote = { chapter: groups[lockedAt].chapter, need: Math.max(1, Math.ceil(prev.length * 0.7) - done) };
+  }
 
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -107,6 +116,15 @@ export function StageMap({ open, onClose }: StageMapProps) {
             )}
           </svg>
 
+          {unlockNote && (
+            <p
+              className="kp-map-unlock"
+              style={{ top: points[LEVELS.findIndex((l) => l.chapter === unlockNote.chapter)].y - 68 }}
+            >
+              章 {unlockNote.chapter - 1} をあと {unlockNote.need} 面クリアすると、ここがひらく
+            </p>
+          )}
+
           {LEVELS.map((level, i) => {
             const p = points[i];
             const prog = progress[i];
@@ -116,7 +134,11 @@ export function StageMap({ open, onClose }: StageMapProps) {
             const side = p.x > 0.5 ? 'left' : 'right';
             return (
               <div key={level.id} className="kp-map-spot" style={{ left: `${p.x * 100}%`, top: p.y }}>
-                {firstOfChapter && <span className={`kp-map-chapter ${side}`}>章 {level.chapter}</span>}
+                {firstOfChapter && (
+                  <span className={`kp-map-chapter ${side}`}>
+                    章 {level.chapter}
+                  </span>
+                )}
                 <button
                   type="button"
                   className={`kp-map-node${locked ? ' locked' : ''}${prog.cleared ? ' cleared' : ''}${
