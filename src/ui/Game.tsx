@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { computeStars } from '@/engine/scoring';
 import { recordClear } from '@/storage/progress';
+import { hasSeenHint, markHintSeen } from '@/storage/hints';
 import { turnLimitOf, type LevelDef } from '@/levels/types';
 import type { AttackType } from '@/engine/types';
 
@@ -14,6 +15,7 @@ import hourglassArt from '@/assets/sprites/hourglass.png';
 import starOnArt from '@/assets/sprites/star-on.png';
 import starOffArt from '@/assets/sprites/star-off.png';
 import { SettingsSheet } from './SettingsSheet';
+import { LEVEL_TIPS } from './levelTips';
 
 /** 勝敗が決まってから結果カードを出すまで。最後の一手の音と盤面を見せ切る長さ。 */
 const RESULT_DELAY_MS = 1200;
@@ -51,6 +53,13 @@ interface GameProps {
 export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabel = 'ステージせんたく' }: GameProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  // 初めて出る仕掛けの一言ヒント。タップで閉じるか、クリアしたら「見た」にする（KP-24）
+  const tip = LEVEL_TIPS[level.id];
+  const [tipOpen, setTipOpen] = useState(() => tip !== undefined && !hasSeenHint(level.id));
+  const closeTip = () => {
+    markHintSeen(level.id);
+    setTipOpen(false);
+  };
   const {
     state,
     selectedPieceId,
@@ -73,6 +82,7 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
   useEffect(() => {
     if (state.status === 'won') {
       const earned = computeStars(level.tStar, level.s, actionsTaken);
+      markHintSeen(level.id);
       if (onClear) onClear(earned, actionsTaken);
       else recordClear(level.id, earned, actionsTaken);
     }
@@ -149,6 +159,14 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
           )}
         </div>
       </header>
+      {tip && tipOpen && state.status === 'playing' && (
+        <button type="button" className="kp-tip" onClick={closeTip}>
+          <span>{tip}</span>
+          <span className="kp-tip-close" aria-hidden="true">
+            ✕
+          </span>
+        </button>
+      )}
       <main className="play">
         <div className="board">
           <Board
@@ -193,6 +211,9 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
                       <span className="kp-result-goal">★3 まで あと {actionsTaken - level.tStar} 手</span>
                     </>
                   )}
+                </p>
+                <p className="kp-result-rule">
+                  ★3 は {level.tStar} 手以内 ／ ★2 は {level.tStar + Math.floor(level.s / 2)} 手以内
                 </p>
               </>
             ) : (
