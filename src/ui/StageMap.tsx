@@ -134,7 +134,7 @@ export function StageMap({ open, onClose }: StageMapProps) {
             const side = p.x > 0.5 ? 'left' : 'right';
             return (
               <div key={level.id} className="kp-map-spot" style={{ left: `${p.x * 100}%`, top: p.y }}>
-                {firstOfChapter && (
+                {firstOfChapter && !locked && (
                   <span className={`kp-map-chapter ${side}`}>
                     章 {level.chapter}
                   </span>
@@ -157,7 +157,7 @@ export function StageMap({ open, onClose }: StageMapProps) {
                     ))}
                   </span>
                 )}
-                <span className={`kp-map-name ${side}${locked ? ' locked' : ''}`}>{locked ? '？？？' : level.title}</span>
+                {!locked && <span className={`kp-map-name ${side}`}>{level.title}</span>}
               </div>
             );
           })}

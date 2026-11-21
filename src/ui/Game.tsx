@@ -210,16 +210,8 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
                   ))}
                 </div>
                 <p className="kp-result-sub">
-                  {actionsTaken} 手（さいたん {level.tStar}）
-                  {stars < 3 && (
-                    <>
-                      <br />
-                      <span className="kp-result-goal">★3 まで あと {actionsTaken - level.tStar} 手</span>
-                    </>
-                  )}
-                </p>
-                <p className="kp-result-rule">
-                  ★3 は {level.tStar} 手以内 ／ ★2 は {level.tStar + Math.floor(level.s / 2)} 手以内
+                  {actionsTaken} 手
+                  {stars < 3 && <span className="kp-result-goal">　★3 まで あと {actionsTaken - level.tStar} 手</span>}
                 </p>
               </>
             ) : (
