@@ -16,6 +16,7 @@ import { ch15_1, ch15_2, ch15_3, ch15_4 } from './chapter15';
 import { ch16_1, ch16_2, ch16_3, ch16_4 } from './chapter16';
 import { ch17_1, ch17_2, ch17_3, ch17_4 } from './chapter17';
 import { ch18_1, ch18_2, ch18_3, ch18_4 } from './chapter18';
+import { ch19_1, ch19_2, ch19_3, ch19_4 } from './chapter19';
 import type { LevelDef } from './types';
 
 export type { LevelDef } from './types';
@@ -29,6 +30,7 @@ export const LEVELS: LevelDef[] = [
   ch16_1, ch16_2, ch16_3, ch16_4,
   ch17_1, ch17_2, ch17_3, ch17_4,
   ch18_1, ch18_2, ch18_3, ch18_4,
+  ch19_1, ch19_2, ch19_3, ch19_4,
 ];
 
 export function getLevel(id: string): LevelDef | undefined {
