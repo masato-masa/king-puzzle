@@ -55,7 +55,8 @@ function EndlessRoute({ n }: { n: number }) {
     void loadEndless(n).then((made) => {
       if (!alive) return;
       setLevel(made);
-      void loadEndless(n + 1);
+      // 先読み: 遊んでいる間に次の 3 面までを作っておく（1 面の生成は最大 2〜3 秒かかることがある。Worker は順に処理する）
+      void loadEndless(n + 1).then(() => loadEndless(n + 2)).then(() => loadEndless(n + 3));
     });
     return () => {
       alive = false;

@@ -122,13 +122,20 @@ function baseWeight(level: LevelDef, n: number, recent: string[], used = 0, deca
  * 骨格を選ぶ二段選び（KP-26）。章を先に選び（その章で一番選ばれやすい骨格の重み ÷ 章の使用回数）、
  * そのあと章の中で骨格を選ぶ。章が多い（面が多い）ほど有利、にならない。
  */
-function pickBase(rand: Rand, n: number, recent: string[], decay = USE_DECAY): LevelDef {
-  const weight = (l: LevelDef) => baseWeight(l, n, recent, usedCount.get(l.id) ?? 0, decay);
+function pickBase(
+  rand: Rand,
+  n: number,
+  recent: string[],
+  decay = USE_DECAY,
+  used: Map<string, number> = usedCount,
+  chUsed: Map<number, number> = chapterUsed,
+): LevelDef {
+  const weight = (l: LevelDef) => baseWeight(l, n, recent, used.get(l.id) ?? 0, decay);
   const chapters = [...new Set(POOL.map((l) => l.chapter))];
   const chapterW = new Map<number, number>();
   for (const c of chapters) {
     const best = Math.max(...POOL.filter((l) => l.chapter === c).map(weight));
-    chapterW.set(c, best / (1 + CHAPTER_DECAY * (chapterUsed.get(c) ?? 0)));
+    chapterW.set(c, best / (1 + CHAPTER_DECAY * (chUsed.get(c) ?? 0)));
   }
   const ch = pickWeighted(rand, chapters, (c) => chapterW.get(c)!);
   return pickWeighted(rand, POOL.filter((l) => l.chapter === ch), (l) => weight(l) + 1e-9);
@@ -136,6 +143,9 @@ function pickBase(rand: Rand, n: number, recent: string[], decay = USE_DECAY): L
 
 /** 面の番号ごとに決めた骨格の列。直近の骨格に依存するので 1 から順に作って覚えておく（決定的）。 */
 const plannedBases: string[] = [];
+/** k 面目を決める直前の使用回数。選び直しもこの時点の数え方を使い、どこまで先に決めてあるかで結果が変わらないようにする（決定性）。 */
+const usedBefore: Map<string, number>[] = [];
+const chapterBefore: Map<number, number>[] = [];
 /** 骨格ごとの、これまでに決めた回数（plannedBases の集計）。 */
 const usedCount = new Map<string, number>();
 /** 章ごとの、これまでに決めた回数。 */
@@ -144,6 +154,8 @@ const chapterUsed = new Map<number, number>();
 /** n 面目の骨格（最も厳しい段で使う）。種は番号だけで決まり、生成の成否には左右されない。 */
 export function plannedBase(n: number): LevelDef {
   for (let k = plannedBases.length + 1; k <= n; k++) {
+    usedBefore[k] = new Map(usedCount);
+    chapterBefore[k] = new Map(chapterUsed);
     const rand = rng(seedOf(k) ^ 0x5eed);
     const recent = plannedBases.slice(Math.max(0, k - 1 - RECENT), k - 1);
     const id = pickBase(rand, k, recent).id;
@@ -397,7 +409,7 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     for (let k = 0; k < share; k++) {
       attempts++;
       // はじめは決めておいた骨格を揺らす。その骨格では狙いの手数に届かないときは、骨格も選び直す
-      const base = attempts <= PLANNED_TRIES ? planned : pickBase(rand, n, recent, RESELECT_DECAY);
+      const base = attempts <= PLANNED_TRIES ? planned : pickBase(rand, n, recent, RESELECT_DECAY, usedBefore[n], chapterBefore[n]);
       const c = candidate(rand, base, reachChapter(n), stages[si].lo);
       if (!c) continue;
       const tStar = accept(c.lv, stages[si], seedOf(n) ^ attempts);
@@ -407,6 +419,6 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     }
   }
   // 最終段: 本編の面をそのまま出す。本編の面は監査テストで解けることを確かめてある
-  const base = budget > 0 ? pickBase(rand, n, recent, RESELECT_DECAY) : planned;
+  const base = budget > 0 ? pickBase(rand, n, recent, RESELECT_DECAY, usedBefore[n], chapterBefore[n]) : planned;
   return { level: finish(cloneLevel(base), n, base.tStar), stage: 3, attempts, baseId: base.id };
 }

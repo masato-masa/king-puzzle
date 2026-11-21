@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import starOnArt from '@/assets/sprites/star-on.png';
 import { navigate } from '@/core/router';
+import { loadEndless } from '@/levels/endlessClient';
 import { chapters, LEVELS } from '@/levels/index';
 import type { LevelDef } from '@/levels/index';
 import { clearEndlessProgress, getEndlessProgress } from '@/storage/endless';
@@ -38,6 +39,10 @@ export function Home() {
   const starCount = progress.reduce((sum, p) => sum + p.bestStars, 0);
   const started = clearedCount > 0;
   const endlessNext = getEndlessProgress().next;
+  // ホームを見ている間に、つづきの面をつくっておく（むげんを押したときに待たせない）
+  useEffect(() => {
+    void loadEndless(endlessNext);
+  }, [endlessNext]);
 
   const handleClearRecords = () => {
     if (!window.confirm('きろくをぜんぶ消します。よろしいですか？')) return;
