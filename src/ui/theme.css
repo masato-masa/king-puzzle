@@ -652,3 +652,40 @@ body,
   font-size: 15px;
   line-height: 1.65;
 }
+
+/* 横向きのスマホ: 縦向きにしてもらう（PC・タブレットの横長は高さがあるので出さない） */
+.rotate-hint {
+  display: none;
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 16px;
+    background: radial-gradient(circle at 50% 40%, #2c2342, #0c0814 75%);
+    color: var(--gold, #f3c04a);
+    font-size: 18px;
+    text-align: center;
+  }
+  .rotate-phone {
+    width: 44px;
+    height: 76px;
+    border: 4px solid var(--gold, #f3c04a);
+    border-radius: 10px;
+    animation: rotate-phone 2.2s ease-in-out infinite;
+  }
+}
+@keyframes rotate-phone {
+  0%,
+  30% {
+    rotate: -90deg;
+  }
+  60%,
+  100% {
+    rotate: 0deg;
+  }
+}
