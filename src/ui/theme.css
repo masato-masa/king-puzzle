@@ -638,3 +638,17 @@ body,
   font-size: 12px;
   color: var(--muted);
 }
+
+/* あそびかたの本文を詰める（1 画面で読める量を増やす）。 */
+.kp-sheet h2 {
+  margin: 4px 0 6px;
+}
+.kp-sheet h3 {
+  margin: 14px 0 4px;
+  font-size: 17px;
+}
+.kp-sheet p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+}

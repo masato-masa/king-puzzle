@@ -147,6 +147,19 @@ export function Board({
               <img className={`kp-building${piece ? ' kp-building-under' : ''}`} src={sprite(building)} alt="" draggable={false} />
             )}
             {facilityName && <span className="kp-node-level">Lv{node.level}</span>}
+          </div>
+        );
+      })}
+      {/* 攻撃の狙いは駒より前の層に出す。駒が乗るマスでも「弓2」が駒に隠れない。 */}
+      {state.board.nodes.map((node) => {
+        const pos = positions[node.id];
+        if (!marks[node.id]) return null;
+        return (
+          <div
+            key={`marks-${node.id}`}
+            className="kp-attack-layer"
+            style={{ left: (pos.x - minX) * scale, top: (pos.y - minY) * scale }}
+          >
             {marks[node.id] && (
               <div className="kp-attack-marks">
                 {marks[node.id].map((m) => (

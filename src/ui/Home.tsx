@@ -40,6 +40,7 @@ export function Home() {
   const endlessNext = getEndlessProgress().next;
 
   const handleClearRecords = () => {
+    if (!window.confirm('きろくをぜんぶ消します。よろしいですか？')) return;
     clearAllProgress();
     clearEndlessProgress();
     window.location.reload();

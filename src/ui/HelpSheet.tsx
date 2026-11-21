@@ -7,6 +7,7 @@ export function HelpSheet({ onClose }: HelpSheetProps) {
     <div className="kp-sheet-overlay" onClick={onClose}>
       <div className="kp-sheet" onClick={(e) => e.stopPropagation()}>
         <h2>あそびかた</h2>
+        <div className="kp-sheet-body">
         <section>
           <h3>1. うごかす</h3>
           <p>自分の駒をえらんで、となりのマスへ。もといた場所をえらぶと足踏み。</p>
@@ -53,7 +54,8 @@ export function HelpSheet({ onClose }: HelpSheetProps) {
           <h3>9. かちまけ</h3>
           <p>相手の王を倒せば勝ち。自分の王を失えば負け。決められたターン数で勝てなくても負け。</p>
         </section>
-        <button type="button" className="sheet-link" onClick={onClose}>
+        </div>
+        <button type="button" className="sheet-btn kp-sheet-close" onClick={onClose}>
           とじる
         </button>
       </div>
