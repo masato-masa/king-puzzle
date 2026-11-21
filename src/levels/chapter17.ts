@@ -4,189 +4,7 @@ export const ch17_1: LevelDef = {
   id: 'ch17-1',
   chapter: 17,
   order: 1,
-  title: 'たいほうのあいだ',
-  board: {
-    nodes: [
-      {
-        id: 'k',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 't',
-        type: 'training',
-        level: 3
-      },
-      {
-        id: 'a',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 'b',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 'c',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 'e',
-        type: 'road',
-        level: 0
-      }
-    ],
-    edges: [
-      {
-        a: 'k',
-        b: 't'
-      },
-      {
-        a: 'k',
-        b: 'a'
-      },
-      {
-        a: 'a',
-        b: 'b'
-      },
-      {
-        a: 'b',
-        b: 'c'
-      },
-      {
-        a: 'c',
-        b: 'e'
-      }
-    ]
-  },
-  initialPieces: [
-    {
-      owner: 'player',
-      isKing: true,
-      level: 1,
-      nodeId: 'k'
-    },
-    {
-      owner: 'enemy',
-      isKing: true,
-      level: 2,
-      nodeId: 'e'
-    }
-  ],
-  initialCoins: 0,
-  attacks: [
-    {
-      id: 'c0',
-      type: 'cannon',
-      target: {
-        kind: 'node',
-        nodeId: 'b'
-      },
-      period: 2
-    }
-  ],
-  tStar: 7,
-  s: 3
-};
-
-export const ch17_2: LevelDef = {
-  id: 'ch17-2',
-  chapter: 17,
-  order: 2,
-  title: 'おくのたいほう',
-  board: {
-    nodes: [
-      {
-        id: 'k',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 't',
-        type: 'training',
-        level: 3
-      },
-      {
-        id: 'a',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 'b',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 'c',
-        type: 'road',
-        level: 0
-      },
-      {
-        id: 'e',
-        type: 'road',
-        level: 0
-      }
-    ],
-    edges: [
-      {
-        a: 'k',
-        b: 't'
-      },
-      {
-        a: 'k',
-        b: 'a'
-      },
-      {
-        a: 'a',
-        b: 'b'
-      },
-      {
-        a: 'b',
-        b: 'c'
-      },
-      {
-        a: 'c',
-        b: 'e'
-      }
-    ]
-  },
-  initialPieces: [
-    {
-      owner: 'player',
-      isKing: true,
-      level: 1,
-      nodeId: 'k'
-    },
-    {
-      owner: 'enemy',
-      isKing: true,
-      level: 2,
-      nodeId: 'e'
-    }
-  ],
-  initialCoins: 0,
-  attacks: [
-    {
-      id: 'c0',
-      type: 'cannon',
-      target: {
-        kind: 'node',
-        nodeId: 'c'
-      },
-      period: 2
-    }
-  ],
-  tStar: 8,
-  s: 3
-};
-
-export const ch17_3: LevelDef = {
-  id: 'ch17-3',
-  chapter: 17,
-  order: 3,
-  title: 'いすわるへい',
+  title: 'わなをとびこえる',
   board: {
     nodes: [
       {
@@ -215,6 +33,11 @@ export const ch17_3: LevelDef = {
         level: 0
       },
       {
+        id: 'c',
+        type: 'road',
+        level: 0
+      },
+      {
         id: 'e',
         type: 'road',
         level: 0
@@ -224,6 +47,204 @@ export const ch17_3: LevelDef = {
       {
         a: 'k',
         b: 's'
+      },
+      {
+        a: 'k',
+        b: 't'
+      },
+      {
+        a: 'k',
+        b: 'a'
+      },
+      {
+        a: 'a',
+        b: 'b'
+      },
+      {
+        a: 'b',
+        b: 'c'
+      },
+      {
+        a: 'c',
+        b: 'e'
+      }
+    ]
+  },
+  initialPieces: [
+    {
+      owner: 'player',
+      isKing: true,
+      level: 1,
+      nodeId: 'k'
+    },
+    {
+      owner: 'enemy',
+      isKing: true,
+      level: 2,
+      nodeId: 'e'
+    }
+  ],
+  initialCoins: 0,
+  attacks: [
+    {
+      id: 's1',
+      type: 'snare',
+      target: {
+        kind: 'node',
+        nodeId: 'a'
+      },
+      period: 1
+    },
+    {
+      id: 's2',
+      type: 'snare',
+      target: {
+        kind: 'node',
+        nodeId: 'c'
+      },
+      period: 1
+    }
+  ],
+  tStar: 6,
+  s: 3
+};
+
+export const ch17_2: LevelDef = {
+  id: 'ch17-2',
+  chapter: 17,
+  order: 2,
+  title: 'ふさがるみち',
+  board: {
+    nodes: [
+      {
+        id: 'k',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 't',
+        type: 'training',
+        level: 3
+      },
+      {
+        id: 'a',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 'b',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 'c',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 'e',
+        type: 'road',
+        level: 0
+      }
+    ],
+    edges: [
+      {
+        a: 'k',
+        b: 't'
+      },
+      {
+        a: 'k',
+        b: 'a'
+      },
+      {
+        a: 'a',
+        b: 'b'
+      },
+      {
+        a: 'b',
+        b: 'c'
+      },
+      {
+        a: 'c',
+        b: 'e'
+      }
+    ]
+  },
+  initialPieces: [
+    {
+      owner: 'player',
+      isKing: true,
+      level: 1,
+      nodeId: 'k'
+    },
+    {
+      owner: 'enemy',
+      isKing: true,
+      level: 2,
+      nodeId: 'e'
+    }
+  ],
+  initialCoins: 0,
+  attacks: [
+    {
+      id: 'b1',
+      type: 'blockade',
+      target: {
+        kind: 'node',
+        nodeId: 'b'
+      },
+      period: 4,
+      initial: 1,
+      duration: 2
+    }
+  ],
+  tStar: 7,
+  s: 3
+};
+
+export const ch17_3: LevelDef = {
+  id: 'ch17-3',
+  chapter: 17,
+  order: 3,
+  title: 'むかえうつ',
+  board: {
+    nodes: [
+      {
+        id: 'k',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 'h',
+        type: 'hut',
+        level: 0,
+        hutOwner: 'player'
+      },
+      {
+        id: 't',
+        type: 'training',
+        level: 3
+      },
+      {
+        id: 'a',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 'b',
+        type: 'road',
+        level: 0
+      },
+      {
+        id: 'e',
+        type: 'road',
+        level: 0
+      }
+    ],
+    edges: [
+      {
+        a: 'k',
+        b: 'h'
       },
       {
         a: 'k',
@@ -253,19 +274,18 @@ export const ch17_3: LevelDef = {
     {
       owner: 'enemy',
       isKing: true,
-      level: 2,
+      level: 1,
       nodeId: 'e'
     },
     {
       owner: 'enemy',
       isKing: false,
-      level: 2,
-      nodeId: 'a',
-      behavior: 'occupy',
-      target: 't'
+      level: 3,
+      nodeId: 'b',
+      behavior: 'march'
     }
   ],
-  initialCoins: 0,
+  initialCoins: 2,
   attacks: [],
   tStar: 8,
   s: 3
@@ -275,7 +295,7 @@ export const ch17_4: LevelDef = {
   id: 'ch17-4',
   chapter: 17,
   order: 4,
-  title: 'しんぐんのへい',
+  title: 'ふたりでやぶる',
   board: {
     nodes: [
       {
@@ -285,18 +305,24 @@ export const ch17_4: LevelDef = {
       },
       {
         id: 'h',
-        type: 'road',
-        level: 0
+        type: 'hut',
+        level: 0,
+        hutOwner: 'player'
       },
       {
-        id: 't',
-        type: 'training',
-        level: 3
+        id: 'm',
+        type: 'mine',
+        level: 1
       },
       {
-        id: 'a',
-        type: 'road',
-        level: 0
+        id: 'w1',
+        type: 'wall',
+        level: 1
+      },
+      {
+        id: 'w2',
+        type: 'wall',
+        level: 1
       },
       {
         id: 'e',
@@ -307,18 +333,22 @@ export const ch17_4: LevelDef = {
     edges: [
       {
         a: 'k',
+        b: 'm'
+      },
+      {
+        a: 'k',
         b: 'h'
       },
       {
-        a: 'k',
-        b: 't'
+        a: 'h',
+        b: 'w1'
       },
       {
-        a: 'k',
-        b: 'a'
+        a: 'w1',
+        b: 'w2'
       },
       {
-        a: 'a',
+        a: 'w2',
         b: 'e'
       }
     ]
@@ -327,25 +357,18 @@ export const ch17_4: LevelDef = {
     {
       owner: 'player',
       isKing: true,
-      level: 1,
+      level: 2,
       nodeId: 'k'
     },
     {
       owner: 'enemy',
       isKing: true,
-      level: 2,
+      level: 1,
       nodeId: 'e'
-    },
-    {
-      owner: 'enemy',
-      isKing: false,
-      level: 2,
-      nodeId: 'e',
-      behavior: 'march'
     }
   ],
-  initialCoins: 6,
+  initialCoins: 4,
   attacks: [],
-  tStar: 8,
+  tStar: 9,
   s: 3
 };
