@@ -91,6 +91,8 @@ const CLOSE_WIDTH = 6;
 /** 骨格の使用回数による減衰 1/(1+USE×回数)、章の使用回数による減衰 1/(1+CH×回数)。 */
 const USE_DECAY = 0.6;
 const CHAPTER_DECAY = 0.15;
+/** 選び直しのときの使用回数による減衰。選び直しは届きやすい骨格（章 10-1 など）へ流れやすいので、決めたときより強く下げる。 */
+const RESELECT_DECAY = 8;
 const MAX_CHAPTER = Math.max(...LEVELS.map((l) => l.chapter));
 /**
  * 骨格にする面の重み。条件で締め出さず、重みで寄せる（CLAUDE.md）。
@@ -99,7 +101,7 @@ const MAX_CHAPTER = Math.max(...LEVELS.map((l) => l.chapter));
  * - 最短手数: 狙いに近いほど少し出やすい。揺らしで手数は動くので弱めにかける（偏り P11 の原因だった）
  * - 直近: 直前の骨格は 0.02 倍、3 面以内は 0.1 倍、6 面以内は 0.4 倍
  */
-function baseWeight(level: LevelDef, n: number, recent: string[], used = 0): number {
+function baseWeight(level: LevelDef, n: number, recent: string[], used = 0, decay = USE_DECAY): number {
   const { lo, hi } = targetRange(n);
   const center = (lo + hi) / 2;
   const closeness = Math.exp(-Math.abs(level.tStar - center) / CLOSE_WIDTH);
@@ -112,7 +114,7 @@ function baseWeight(level: LevelDef, n: number, recent: string[], used = 0): num
   const recency = age <= 1 ? 0.02 : age <= 3 ? 0.1 : age <= RECENT ? 0.4 : 1;
   // これまでに使った回数が多い骨格ほど出にくく（偏りをならす。使うたびに 1/(1+0.15×回数) 倍）
   // 同じ章の骨格が増えすぎないように、章ごとの使用回数でも下げる（章 14 の 4 面が 39% を占めた KP-21）
-  const balance = 1 / (1 + USE_DECAY * used);
+  const balance = 1 / (1 + decay * used);
   return closeness * (1 + GAP_BOOST * Math.min(GAP_CAP, Math.max(0, lo - level.tStar))) * chapterWeight * recency * balance / (1 + (NOVELTY * level.chapter) / MAX_CHAPTER);
 }
 
@@ -120,8 +122,8 @@ function baseWeight(level: LevelDef, n: number, recent: string[], used = 0): num
  * 骨格を選ぶ二段選び（KP-26）。章を先に選び（その章で一番選ばれやすい骨格の重み ÷ 章の使用回数）、
  * そのあと章の中で骨格を選ぶ。章が多い（面が多い）ほど有利、にならない。
  */
-function pickBase(rand: Rand, n: number, recent: string[]): LevelDef {
-  const weight = (l: LevelDef) => baseWeight(l, n, recent, usedCount.get(l.id) ?? 0);
+function pickBase(rand: Rand, n: number, recent: string[], decay = USE_DECAY): LevelDef {
+  const weight = (l: LevelDef) => baseWeight(l, n, recent, usedCount.get(l.id) ?? 0, decay);
   const chapters = [...new Set(POOL.map((l) => l.chapter))];
   const chapterW = new Map<number, number>();
   for (const c of chapters) {
@@ -395,7 +397,7 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     for (let k = 0; k < share; k++) {
       attempts++;
       // はじめは決めておいた骨格を揺らす。その骨格では狙いの手数に届かないときは、骨格も選び直す
-      const base = attempts <= PLANNED_TRIES ? planned : pickBase(rand, n, recent);
+      const base = attempts <= PLANNED_TRIES ? planned : pickBase(rand, n, recent, RESELECT_DECAY);
       const c = candidate(rand, base, reachChapter(n), stages[si].lo);
       if (!c) continue;
       const tStar = accept(c.lv, stages[si], seedOf(n) ^ attempts);
@@ -405,6 +407,6 @@ export function generateEndless(n: number, budget = DEFAULT_BUDGET): EndlessResu
     }
   }
   // 最終段: 本編の面をそのまま出す。本編の面は監査テストで解けることを確かめてある
-  const base = budget > 0 ? pickBase(rand, n, recent) : planned;
+  const base = budget > 0 ? pickBase(rand, n, recent, RESELECT_DECAY) : planned;
   return { level: finish(cloneLevel(base), n, base.tStar), stage: 3, attempts, baseId: base.id };
 }
