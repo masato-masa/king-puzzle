@@ -689,3 +689,17 @@ body,
     rotate: 0deg;
   }
 }
+
+/* 空きマス（道）は ChatGPT で描いた石の台座の絵（assets-src/node-disc.png → scripts/slice-node.mjs）。 */
+.app-battle .kp-node-road {
+  background: url('../assets/sprites/node.png') center / 100% 100% no-repeat;
+  border: 0;
+  box-shadow: 0 5px 7px rgb(0 0 0 / 0.5);
+}
+.app-battle .kp-node-road.kp-node-legal {
+  outline: 3px solid #fff;
+  outline-offset: 0;
+  box-shadow:
+    0 0 0 6px rgb(255 190 40 / 0.85),
+    0 0 18px 6px rgb(255 190 40 / 0.9);
+}
