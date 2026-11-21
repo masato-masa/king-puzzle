@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { computeStars } from '@/engine/scoring';
 import { recordClear } from '@/storage/progress';
+import { playStar } from '@/core/sound';
 import { hasSeenHint, markHintSeen } from '@/storage/hints';
 import { turnLimitOf, type LevelDef } from '@/levels/types';
 import type { AttackType } from '@/engine/types';
@@ -105,6 +106,11 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
     const timer = window.setTimeout(() => setShowResult(true), RESULT_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [state.status]);
+  // ★が出るたびに、上がっていく音（アニメーション 180 + 260×i ms に合わせる）
+  useEffect(() => {
+    if (!showResult || state.status !== 'won') return;
+    for (let i = 0; i < stars; i++) playStar(i, (180 + i * 260) / 1000);
+  }, [showResult, state.status, stars]);
 
   return (
     <div className="app app-battle">
