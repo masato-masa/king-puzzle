@@ -333,11 +333,11 @@ export const ch21_4: LevelDef = {
       owner: 'enemy',
       isKing: false,
       level: 1,
-      nodeId: 'e',
+      nodeId: 'a',
       behavior: 'march'
     }
   ],
-  initialCoins: 4,
+  initialCoins: 2,
   attacks: [],
   tStar: 9,
   s: 3

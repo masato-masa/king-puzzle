@@ -108,7 +108,7 @@ function baseWeight(level: LevelDef, n: number, recent: string[], used = 0, deca
   const reach = reachChapter(n);
   const ahead = Math.max(0, level.chapter - reach);
   const behind = Math.max(0, reach - level.chapter - 4);
-  const chapterWeight = Math.exp(-ahead / 0.35) * Math.exp(-behind / 4);
+  const chapterWeight = Math.exp(-ahead / 0.2) * Math.exp(-behind / 4);
   const at = recent.lastIndexOf(level.id);
   const age = at === -1 ? Infinity : recent.length - at;
   const recency = age <= 1 ? 0.02 : age <= 3 ? 0.1 : age <= RECENT ? 0.4 : 1;
