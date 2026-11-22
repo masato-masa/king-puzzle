@@ -16,7 +16,7 @@ export interface SolveResult {
  * tStar+s をここで使うと、実測前の仮の tStar が小さすぎた場合に本当の解を
  * 時間切れとして刈ってしまう（鶏と卵の問題）ため。
  */
-export function solve(level: LevelDef, maxDepth = 40): SolveResult | null {
+export function solve(level: LevelDef, maxDepth = 40, maxStates = Infinity): SolveResult | null {
   const init = createInitialState({
     board: level.board,
     initialPieces: level.initialPieces,
@@ -40,6 +40,8 @@ export function solve(level: LevelDef, maxDepth = 40): SolveResult | null {
         const key = serializeState(result);
         if (visited.has(key)) continue;
         visited.add(key);
+        // 重すぎる探索はあきらめる（むげんの生成を短い時間に収めるため。本編の監査では無制限）
+        if (visited.size > maxStates) return null;
         next.push({ state: result, path: [...path, action] });
       }
     }

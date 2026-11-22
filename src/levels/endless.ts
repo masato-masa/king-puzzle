@@ -360,6 +360,9 @@ function stagesFor(n: number): Stage[] {
 /** 決めておいた骨格で試す回数。これを過ぎたら骨格を重みで選び直す（条件は緩めない）。 */
 const PLANNED_TRIES = 24;
 
+/** 1 候補の探索で調べる盤面の数の上限。重い候補は捨てて次へ（生成時間の上限を決める） */
+const MAX_STATES = 4000;
+
 /** 段ごとに使う予算の割合。 */
 const STAGE_SHARE = [0.6, 0.25, 0.15];
 
@@ -386,7 +389,7 @@ function candidate(rand: Rand, base: LevelDef, reach: number, lo: number): { lv:
 /** 候補が段の条件を満たすか。満たせば最短手数を返す。 */
 function accept(lv: LevelDef, stage: Stage, seed: number): number | null {
   if (piecePx({ ...lv }) < MIN_PIECE_PX) return null;
-  const result = solve(lv, stage.hi + 1);
+  const result = solve(lv, stage.hi + 1, MAX_STATES);
   if (!result || result.tStar < stage.lo || result.tStar > stage.hi) return null;
   if (result.path.some((a) => a.kind === 'forced-skip')) return null;
   const rate = randomWinRate({ ...lv, tStar: result.tStar, s: ENDLESS_S }, RANDOM_TRIALS, seed);
