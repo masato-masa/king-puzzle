@@ -1,7 +1,7 @@
 // 効果音の音量を数値で点検（常設）。各 wav のピーク・RMS（dBFS）を出し、RMS の最大と最小の差を見る。
-// 使い方: node scripts/audit-sfx.mjs   目安: クリップ 0、RMS の幅 6dB 以内（効果音どうしの聞こえの差）
+// 使い方: node scripts/audit-sfx.mjs [wav のあるフォルダ]   目安: クリップ 0、RMS の幅 6dB 以内（効果音どうしの聞こえの差）
 import { readFileSync, readdirSync } from 'node:fs';
-const dir = 'src/assets/sfx';
+const dir = process.argv[2] ?? 'src/assets/sfx';
 const rows = [];
 for (const f of readdirSync(dir).filter((x) => x.endsWith('.wav'))) {
   const b = readFileSync(`${dir}/${f}`);
