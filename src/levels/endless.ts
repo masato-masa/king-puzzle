@@ -19,7 +19,7 @@ import type { LevelDef } from './types';
 /** ターン制限の余裕。本編と同じ。 */
 const ENDLESS_S = 3;
 /** 1 面を作るのに試す候補の数（既定）。 */
-export const DEFAULT_BUDGET = 80;
+export const DEFAULT_BUDGET = 100;
 /** 当てずっぽう勝率を測る回数。本編の監査（2000 回）より少ないが、選別には足りる。 */
 const RANDOM_TRIALS = 300;
 
@@ -358,7 +358,7 @@ function stagesFor(n: number): Stage[] {
 }
 
 /** 決めておいた骨格で試す回数。これを過ぎたら骨格を重みで選び直す（条件は緩めない）。 */
-const PLANNED_TRIES = 24;
+const PLANNED_TRIES = 8;
 
 /** 1 候補の探索で調べる盤面の数の上限。重い候補は捨てて次へ（生成時間の上限を決める） */
 const MAX_STATES = 4000;
