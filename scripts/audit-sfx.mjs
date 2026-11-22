@@ -26,3 +26,22 @@ for (const f of readdirSync(dir).filter((x) => x.endsWith('.wav'))) {
 console.table(rows);
 const rl = rows.map((r) => Number(r.rmsLoud));
 console.log('鳴っている部分の RMS: 最大', Math.max(...rl), 'dB / 最小', Math.min(...rl), 'dB / 幅', (Math.max(...rl) - Math.min(...rl)).toFixed(1), 'dB。クリップ', rows.filter((r) => r.clip).length, '本');
+
+// 声（名前-番号.wav の名前）ごとの平均 RMS と、目標 -24dBFS にそろえる補正（±5dB まで）。番号なしの名前はそのまま 1 つの声として扱う。
+const groups = new Map();
+for (const r of rows) {
+  const k = r.name.replace(/-\d+\.wav$/, '').replace(/\.wav$/, '');
+  const g = groups.get(k) ?? [];
+  g.push(r);
+  groups.set(k, g);
+}
+const TARGET = -24;
+const summary = [...groups].map(([name, g]) => {
+  const rms = g.reduce((a, r) => a + Number(r.rmsLoud), 0) / g.length;
+  const peak = Math.max(...g.map((r) => Number(r.peak)));
+  const trim = Math.max(-5, Math.min(5, TARGET - rms));
+  return { voice: name, rms: rms.toFixed(1), peak: peak.toFixed(1), trimDb: trim.toFixed(1), rmsAfter: (rms + trim).toFixed(1), peakAfter: (peak + trim).toFixed(1) };
+});
+console.table(summary);
+const after = summary.map((s) => Number(s.rmsAfter));
+console.log('声ごとの補正後 RMS: 最大', Math.max(...after).toFixed(1), '/ 最小', Math.min(...after).toFixed(1), '/ 幅', (Math.max(...after) - Math.min(...after)).toFixed(1), 'dB。補正後のピークが -1dBFS を超える声:', summary.filter((s) => Number(s.peakAfter) > -1).map((s) => s.voice).join(', ') || 'なし');

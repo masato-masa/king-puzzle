@@ -159,8 +159,14 @@ export function playStar(i: number, delayS = 0): void {
 }
 
 /** 触覚。対応していない環境では何も起きない。 */
+/** 連打で鳴らしすぎない: 直前の振動から 60ms 以内の要求は捨てる。 */
+let lastBuzzAt = 0;
+
 export function buzz(pattern: number | number[]): void {
   if (!sfxOn) return;
+  const now = performance.now();
+  if (now - lastBuzzAt < 60) return;
+  lastBuzzAt = now;
   try {
     navigator.vibrate?.(pattern);
   } catch {

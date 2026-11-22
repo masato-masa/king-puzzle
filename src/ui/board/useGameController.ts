@@ -26,6 +26,7 @@ function soundOf(prev: GameState, next: GameState, action: PlayerAction): void {
     buzz([0, 18, 60, 18, 60, 30]);
   } else if (next.status !== 'playing' && prev.status === 'playing') {
     playSfx('lose', 0.45);
+    buzz([0, 40, 50, 40]);
   }
 }
 
