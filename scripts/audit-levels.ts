@@ -11,6 +11,7 @@
  * - 最短解の中の強制スキップ（何もできないラウンド）
  * - 最短解で起きること（KP-13）: 馬小屋で速さが上がったか、動く敵の兵が何体出たか、敵の兵と戦ったか
  */
+import { invariantViolations } from '../src/levels/invariants';
 import { createInitialState } from '../src/engine/state';
 import { playRound } from '../src/engine/turn';
 import type { GameState, PlayerAction } from '../src/engine/types';
@@ -73,6 +74,7 @@ function main() {
     else if (result.tStar !== level.tStar) flags.push(`tStar ずれ(実測 ${result.tStar})`);
     if (px < MIN_PIECE_PX) flags.push('駒が小さい');
     if (result?.path.some((a) => a.kind === 'forced-skip')) flags.push('最短解にスキップ');
+    for (const v of invariantViolations(level)) flags.push(`不変条件: ${v}`);
     rows.push(
       [
         level.id.padEnd(6),

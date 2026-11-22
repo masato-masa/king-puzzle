@@ -10,7 +10,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "solve": "tsx scripts/solveLevel.ts",
-    "deploy": "npm run build && node scripts/deploy.mjs"
+    "deploy": "npm test && npm run build && node scripts/deploy.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { LEVELS } from '@/levels/index';
+import { invariantViolations } from '@/levels/invariants';
 import type { LevelDef } from '@/levels/types';
 
 const levels: LevelDef[] = LEVELS;
@@ -32,5 +33,9 @@ describe('level schema', () => {
         expect(nodeIds.has(attack.target.nodeId)).toBe(true);
       }
     }
+  });
+
+  it.each(levels)('$id: 不変条件（駒が重ならない・壁に乗らない・攻撃の対象が実在・孤立ノードなし）', (level) => {
+    expect(invariantViolations(level)).toEqual([]);
   });
 });
