@@ -191,7 +191,7 @@ export function Game({ level, onBack, onHelp, onRetry, onNext, onClear, backLabe
               {hint}
             </p>
           )}
-          <button type="button" className="tool" onClick={undo} disabled={!canUndo} aria-label="もどす">
+          <button type="button" className="tool" onClick={undo} disabled={!canUndo} aria-label="もどす" style={hint ? { visibility: 'hidden' } : undefined}>
             <UndoToolIcon />
           </button>
         </footer>

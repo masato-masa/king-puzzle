@@ -183,15 +183,15 @@ body,
   background: var(--warn);
 }
 
-/* 1 面目の操作の案内（KP-7）。下のツール行の上に重ねるので、出ても消えても盤は動かない。 */
+/* 1 面目の操作の案内（KP-7）。ツール行の「もどす」（案内が出ている間は押せない）の場所に重ねる。盤にも駒にも被らず、出ても消えても盤は動かない（KP-49）。 */
 .footer {
   position: relative;
 }
 .kp-hint {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 6px);
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   margin: 0;
   padding: 6px 14px;
   border-radius: 999px;
@@ -206,7 +206,7 @@ body,
 }
 @keyframes kp-hint-bob {
   50% {
-    transform: translate(-50%, -3px);
+    transform: translate(-50%, calc(-50% - 3px));
   }
 }
 
